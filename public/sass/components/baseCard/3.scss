@@ -1,0 +1,15 @@
+.baseCard.-type-3 {
+  .baseCard {
+    &__image {
+      position: relative;
+    }
+    
+    &__badge {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      padding: 15px 10px;
+      z-index: 1;
+    }
+  }
+}

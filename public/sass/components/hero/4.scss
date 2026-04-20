@@ -1,0 +1,30 @@
+.hero.-type-4 {
+  padding-top: 185px;
+
+  @include media-below(lg) {
+    padding-top: 140px;
+  }
+
+  @include media-below(md) {
+    padding-top: 120px;
+    padding-bottom: 40px;
+  }
+
+  .hero {
+    &__title {
+      font-size: 92px;
+
+      @include media-below(lg) {
+        font-size: 72px;
+      }
+
+      @include media-below(md) {
+        font-size: 48px;
+      }
+
+      @include media-below(sm) {
+        font-size: 36px;
+      }
+    }
+  }
+}

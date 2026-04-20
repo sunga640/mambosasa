@@ -1,0 +1,62 @@
+:root {
+  --font-primary: "Jost", sans-serif;
+  --font-secondary: "Cormorant Garamond", sans-serif;
+}
+
+$breakpoints: (
+  xs: 480px,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1280px,
+);
+
+$breakpoints-loop: (
+  xl: 1200px,
+  lg: 992px,
+  md: 768px,
+  sm: 576px,
+  xs: 480px,
+);
+
+$font-size: 17px;
+$text-sizes:
+  9, 11, 13, 15, 17, 21, 24, 30, 40, 50, 52, 60, 64, 72, 92,
+;
+
+:root {
+  @each $size in $text-sizes {
+    --text-#{$size}: #{$size}px;
+  }
+}
+
+$colors: (
+  white: #FFFFFF,
+  black: #000000,
+  border: #DDDDDD,
+  accent-1: #122223,
+  accent-2: #F9DABA,
+
+  light-1: #F8F5F0,
+  light-2: #EDF5F3,
+
+  dark-1: #05073C,
+  dark-2: #1D3334,
+  dark-3: #0E1D1E,
+
+  info-1: #CDE9F6,
+  info-2: #4780AA,
+  warning-1: #F7F3D7,
+  warning-2: #927238,
+  error-1: #ECC8C5,
+  error-2: #AB3331,
+  success-1: #DEF2D7,
+  success-2: #5B7052,
+);
+
+:root {
+  @each $name, $color in $colors {
+    --color-#{$name}: #{$color};
+  }
+}

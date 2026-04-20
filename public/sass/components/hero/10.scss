@@ -1,0 +1,99 @@
+.hero.-type-10 {
+  position: relative;
+  z-index: 0;
+
+  .hero {
+    &__slide {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding-top: 320px;
+      padding-bottom: 270px;
+
+      @include media-below(xl) {
+        padding-top: 280px;
+        padding-bottom: 240px;
+      }
+
+      @include media-below(sm) {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+    }
+
+    &__bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      z-index: -1;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    
+    &__pattern {
+      img {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+      }
+    }
+
+    &__content {
+      padding: 0 20px;
+    }
+
+    &__subtitle {
+      text-transform: uppercase;
+      margin-bottom: 50px;
+
+      @include media-below(md) {
+        margin-bottom: 20px;
+      }
+    }
+
+    &__title {
+      font-size: 92px;
+      
+      @include media-below(lg) {
+        font-size: 64px;
+      }
+
+      @include media-below(md) {
+        font-size: 48px;
+      }
+      
+      @include media-below(sm) {
+        font-size: 36px;
+      }
+    }
+
+    &__pagination {
+      position: absolute;
+      left: 50%;
+      bottom: 100px;
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+
+    &__nav {
+      padding: 0 60px;
+      
+      @include media-below(md) {
+        top: unset;
+        transform: unset;
+        bottom: 60px;
+        padding: 0 20px;
+      }
+    }
+  }
+}

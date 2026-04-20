@@ -1,0 +1,52 @@
+.-image-border {
+  .roomCard__image {
+    position: relative;
+  }
+
+  &__item {
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    border: 1px solid rgba(white, 0.2);
+    pointer-events: none;
+  }
+}
+
+.roomCard.-type-2 {
+  .roomCard {
+    &__image {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 20px;
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(white, 0.2);
+        pointer-events: none;
+      }
+
+      &.-no-rounded::after {
+        border-radius: 0;
+      }
+
+      &.-no-line::after {
+        display: none;
+      }
+    }
+    
+    &__price {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      border-radius: 16px 0 16px 0;
+      line-height: 0.65;
+      padding: 15px 10px;
+    }
+  }
+}

@@ -1,0 +1,45 @@
+.pagination.-type-number {
+  display: grid;
+  gap: 15px;
+
+  .pagination__item {
+    display: flex;
+    align-items: center;
+    color: white;
+    font-size: 17px;
+    font-weight: 500;
+    opacity: 0.5;
+
+    &::after {
+      content: "";
+      width: 25px;
+      height: 1px;
+      background-color: white;
+      transform-origin: right;
+      margin-left: 15px;
+      transition: all 0.2s;
+    }
+
+    &:last-child::after {
+      display: none;
+    }
+
+    &.is-active {
+      opacity: 1;
+
+      &::after {
+        width: 50px;
+      }
+    }
+  }
+}
+
+.pagination.-type-progress {
+  position: relative;
+  height: 2px;
+  z-index: 5;
+
+  .swiper-pagination-progressbar-fill {
+    background-color: white;
+  }
+}

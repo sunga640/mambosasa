@@ -1,0 +1,94 @@
+.tabs {
+  &__controls {}
+
+  &__button {}
+
+  &__content {
+    position: relative;
+  }
+
+  &__pane {
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+    transition: none;
+    opacity: 0;
+    
+    &.is-tab-el-active {
+      transition: opacity 0.3s $easeOutQuart 0.1s;
+      position: relative;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+.tabs.-underline-1 .tabs {
+  &__controls .tabs__button {
+    position: relative;
+    transition: all 0.2s $easeOutQuart;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 1px;
+      background-color: var(--color-accent-1);
+      z-index: 10;
+      
+      transition: all 0.2s $easeOutQuart;
+      opacity: 0;
+    }
+
+    &.is-tab-el-active {
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+.tabs.-underline-2 .tabs {
+  &__controls {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 15px;
+      bottom: 0;
+      width: 100%;
+      height: 1px;
+      background-color: var(--color-border);
+    }
+  }
+
+  &__controls .tabs__button {
+    position: relative;
+    transition: all 0.2s $easeOutQuart;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 2px;
+      background-color: var(--color-accent-1);
+      z-index: 10;
+      
+      transition: all 0.2s $easeOutQuart;
+      opacity: 0;
+    }
+
+    &.is-tab-el-active {
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+@import './1.scss';

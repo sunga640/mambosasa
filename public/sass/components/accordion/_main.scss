@@ -1,0 +1,51 @@
+.accordion {
+  &__item {
+  }
+
+  &__icon {
+    position: relative;
+
+    .icon {
+      transition: all 0.2s ease-out;
+      
+      &:nth-child(1) {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      &:nth-child(2) {
+        position: relative;
+        transform: rotate(-90deg);
+        opacity: 0;
+      }
+    }
+  }
+
+  &__item.is-active .accordion__icon {
+    > *:nth-child(1) {
+      transform: rotate(90deg);
+      opacity: 0;
+    }
+    
+    > *:nth-child(2) {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  &__content {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.2s ease-out;
+  }
+
+  &__content__inner {
+  }
+  
+  &__button {
+    cursor: pointer;
+  }
+}
+
+@import './1.scss';

@@ -1,0 +1,62 @@
+.imageCard.-type-1 {
+  .imageCard {
+    &__content {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      height: 960px;
+      padding: 100px;
+
+      @include media-below(xl) {
+        height: 720px;
+        padding: 60px;
+      }
+
+      @include media-below(lg) {
+        height: 640px;
+        padding: 30px;
+      }
+
+      @include media-below(md) {
+        height: auto;
+        padding: 40px 30px;
+      }
+    }
+  }
+
+  &.-hover-1 {
+    .-hover-1-slide {
+      transition: all 0.3s ease-out;
+      
+    }
+
+    .-hover-1-content {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease-out;
+
+      @include media-below(md) {
+        position: relative;
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    &:hover {
+      .-hover-1-slide {
+        transform: translateY(-230px);
+
+        @include media-below(md) {
+          transform: none;
+        }
+      }
+
+      .-hover-1-content {
+        opacity: 1;
+        pointer-events: auto;
+        transition: all 0.3s ease-out 0.2s;
+      }
+    }
+  }
+}

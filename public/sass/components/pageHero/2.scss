@@ -1,0 +1,74 @@
+.pageHero.-type-2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 960px;
+  z-index: 0;
+
+  @include media-below(md) {
+    height: auto;
+    padding-top: 220px;
+    padding-bottom: 80px;
+  }
+
+  @include media-below(sm) {
+    padding-top: 180px;
+  }
+
+  .pageHero {
+    &__bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    &__content {
+    }
+
+    &__subtitle {
+      font-weight: 500;
+      margin-bottom: 40px;
+
+      @include media-below(md) {
+        margin-bottom: 30px;
+      }
+    }
+
+    &__title {
+      font-size: 92px;
+      line-height: 0.65;
+
+      @include media-below(lg) {
+        line-height: 1.2;
+      }
+
+      @include media-below(md) {
+        font-size: 68px;
+      }
+
+      @include media-below(sm) {
+        font-size: 50px;
+      }
+    }
+
+    &__text {
+      width: 500px;
+      max-width: 100%;
+      margin: 0 auto;
+      margin-top: 50px;
+
+      @include media-below(lg) {
+        margin-top: 30px;
+      }
+    }
+  }
+}

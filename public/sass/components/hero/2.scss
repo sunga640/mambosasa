@@ -1,0 +1,130 @@
+.hero.-type-2 {
+  position: relative;
+  padding-top: 160px;
+
+  @include media-below(lg) {
+    padding-bottom: 40px;
+  }
+
+  @include media-below(md) {
+    padding-top: 140px;
+    padding-bottom: 80px;
+  }
+
+  @include media-below(sm) {
+    padding-top: 100px;
+    padding-bottom: 50px;
+  }
+
+  .hero {
+    &__bg {
+      position: absolute;
+      top: 0;
+      bottom: 300px;
+      left: 0;
+      width: 100%;
+
+      @include media-below(lg) {
+        bottom: 0;
+      }
+
+      @include media-below(md) {
+        bottom: 0;
+      }
+    }
+
+    &__title {
+      font-size: 72px;
+      line-height: 1.1;
+
+      @include media-below(lg) {
+        font-size: 64px;
+      }
+
+      @include media-below(md) {
+        font-size: 52px;
+      }
+
+      @include media-below(sm) {
+        font-size: 40px;
+        line-height: 1.2;
+      }
+    }
+
+    &__filterButtonMobile {
+      display: none;
+
+      @include media-below(lg) {
+        display: block;
+      }
+    }
+
+    &__filter {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      max-width: 100%;
+      margin: 0 auto;
+      margin-top: 60px;
+      z-index: 5;
+
+      @include media-below(lg) {
+        display: none;
+      }
+    }
+
+    &__arrow {
+      position: absolute;
+      bottom: 50px;
+      right: 40px;
+      z-index: 1;
+
+      @include media-below(md) {
+        display: none;
+      }
+    }
+  }
+
+  .hero-slider {
+    position: relative;
+    margin: 0 110px;
+    margin-top: -40px;
+
+    @include media-below(lg) {
+      margin: 0 30px;
+      margin-top: 40px;
+    }
+
+    .swiper-wrapper .swiper-slide {
+      img {
+        @include media-below(sm) {
+          height: 200px;
+          width: 100%;
+          object-fit: cover;
+        }
+      }
+    }
+
+    &__image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    &__nav {
+      position: absolute;
+      top: 50%;
+      left: 30px;
+      right: 30px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 1;
+      transform: translateY(-50%);
+
+      @include media-below(md) {
+        left: 5px;
+        right: 5px;
+      }
+    }
+  }
+}

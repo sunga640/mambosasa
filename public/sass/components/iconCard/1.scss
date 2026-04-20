@@ -1,0 +1,50 @@
+.iconCard.-type-1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .iconCard {
+    &__icon {
+      position: relative;
+      display: flex;
+      z-index: 0;
+    }
+  }
+
+  &.-hover-1 {
+    .iconCard__icon__circle {
+      position: absolute;
+      top: -8px;
+      left: -21px;
+      width: 50px;
+      height: 50px;
+      border-radius: 100%;
+      z-index: -1;
+      transition: all 0.1s ease-out;
+      opacity: 0;
+    }
+    
+    &:hover .iconCard__icon__circle {
+      opacity: 1;
+    }
+  }
+
+  &.-hover-2 {
+    position: relative;
+
+    .iconCard__bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      transition: all 0.1s ease-out;
+      opacity: 0;
+    }
+    
+    &:hover .iconCard__bg {
+      opacity: 1;
+    }
+  }
+}

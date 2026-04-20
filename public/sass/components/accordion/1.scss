@@ -1,0 +1,40 @@
+.accordion.-type-1 .accordion {
+  &__item {
+    transition: all 0.2s ease-out;
+  }
+
+  &__button {
+    cursor: pointer;
+    transition: 0.4s;
+  }
+
+  &__icon {
+    // background-color: color-opac(accent-1, .05) !important;
+    // color: var(--color-accent-1) !important;
+    transition: all 0.2s ease-out;
+    
+    > *:nth-child(1) {
+      position: absolute;
+      transition: all 0.2s ease-out;
+    }
+    
+    > *:nth-child(2) {
+      position: relative;
+      transform: rotate(-90deg);
+      opacity: 0;
+      transition: all 0.2s ease-out;
+    }
+  }
+
+  &__item.is-active .accordion__icon {
+    > *:nth-child(1) {
+      transform: rotate(90deg);
+      opacity: 0;
+    }
+    
+    > *:nth-child(2) {
+      transform: none;
+      opacity: 1;
+    }
+  }
+}

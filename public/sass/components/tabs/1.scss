@@ -1,0 +1,9 @@
+.tabs.-type-1 .tabs {
+  &__controls .tabs__button {
+    transition: all 0.2s $easeOutQuart;
+
+    &.is-tab-el-active {
+      text-decoration: underline;
+    }
+  }
+}

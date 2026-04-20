@@ -1,0 +1,182 @@
+button {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  text-decoration: none;
+
+  &:focus {
+    outline: 0;
+  }
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: all 0.3s $easeOutQuart;
+}
+
+.button {
+  &.-sm {
+  }
+
+  &.-md {
+    height: 55px;
+    padding: 0 30px;
+  }
+  
+  &.-lg {
+  }
+
+  &.-type-1 {
+    font-weight: 400;
+
+    .-icon {
+      margin-right: 10px;
+    }
+
+    &:hover {
+    }
+  }
+
+  &.-type-2 {
+    &::before {
+      content: "";
+      width: 15px;
+      height: 1px;
+      background-color: currentColor;
+      margin-right: 10px;
+      margin-bottom: 2px;
+    }
+
+    &:hover {
+    }
+  }
+}
+
+@each $name, $color in $colors {
+  .button.-#{$name} {
+    &:hover {
+      border-color: var(--color-#{$name});
+      background-color: var(--color-#{$name}) !important;
+      color: white !important;
+    }
+  }
+
+  .button.-outline-#{$name} {
+    border-color: var(--color-#{$name});
+
+    &:hover {
+      background-color: var(--color-#{$name}) !important;
+      border-color: transparent;
+      color: white !important;
+    }
+  }
+}
+
+.button.-white {
+  &:hover {
+    color: black !important;
+  }
+}
+
+.button.-outline-accent-2 {
+  &:hover {
+    color: black !important;
+  }
+}
+
+.button.-accent-2 {
+  &:hover {
+    color: black !important;
+  }
+}
+
+.button.swiper-button-disabled {
+  opacity: 0.2;
+}
+
+.button.-light-1 {
+  &:hover {
+    color: black !important;
+  }
+}
+
+.button.-blur-1 {
+  background-color: rgba(#122223, 0.5);
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background-color: #122223;
+  }
+}
+
+.button.-outline-white {
+  &:hover {
+    background-color: white !important;
+    color: var(--color-dark-1) !important;
+  }
+}
+
+
+.play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100%;
+  width: 160px;
+  height: 160px;
+
+  &.-sm {
+    width: 90px;
+    height: 90px;
+  }
+  
+  @include media-below(md) {
+    width: 100px;
+    height: 100px;
+    
+    > i {
+      font-size: 18px !important;
+    }
+  }
+
+  &:hover {
+    color: var(--color-accent-1);
+  }
+}
+
+.arrowButton.-type-1 {
+  display: flex;
+  align-items: center;
+
+  > span {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+
+    i {
+      transform: rotate(-90deg);
+    }
+  }
+}
+
+.buttonArrow {
+  &:hover {
+    span {
+      text-decoration: underline;
+    }
+  }
+}
