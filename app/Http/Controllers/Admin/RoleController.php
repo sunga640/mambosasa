@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Repositories\Contracts\PermissionRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Services\Admin\RoleService;
+use App\Support\PermissionCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -29,8 +30,11 @@ class RoleController extends Controller
 
     public function create(): View
     {
+        $permissions = $this->permissions->allOrdered();
+
         return view('admin.roles.create', [
-            'permissions' => $this->permissions->allOrdered(),
+            'permissions' => $permissions,
+            'permissionGroups' => PermissionCatalog::groupedCollection($permissions),
         ]);
     }
 
@@ -47,9 +51,12 @@ class RoleController extends Controller
 
     public function edit(Role $role): View
     {
+        $permissions = $this->permissions->allOrdered();
+
         return view('admin.roles.edit', [
             'role' => $role->load('permissions'),
-            'permissions' => $this->permissions->allOrdered(),
+            'permissions' => $permissions,
+            'permissionGroups' => PermissionCatalog::groupedCollection($permissions),
         ]);
     }
 

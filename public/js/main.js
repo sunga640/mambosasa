@@ -16,30 +16,43 @@ App.html = document.querySelector('html');
 App.body = document.querySelector('body');
 App.SMcontroller = new ScrollMagic.Controller();
 
-window.onload = function () {
+let appBooted = false;
+
+function bootApp() {
+  if (appBooted) return;
+  appBooted = true;
+  RevealAnim.init();
+  initComponents();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const preloader = document.querySelector('.js-preloader');
+
+  if (!preloader) {
+    bootApp();
+  }
+});
+
+window.addEventListener('load', function () {
   if (App.config.cursorFollower.enabled) {
     Cursor.init();
   }
 
-  document.fonts.ready.then(function () {
-    initialReveal()
-  })
-}
+  initialReveal();
+});
 
 function initialReveal() {
   const preloader = document.querySelector('.js-preloader')
   
   if (!preloader) {
-    RevealAnim.init()
-    initComponents()
+    bootApp()
     return
   }
 
   setTimeout(() => {
     preloader.classList.add('-is-hidden')
-    initComponents()
-    RevealAnim.init()
-  }, 600)
+    bootApp()
+  }, 120)
 }
 
 // Reloads all scripts when navigating through pages

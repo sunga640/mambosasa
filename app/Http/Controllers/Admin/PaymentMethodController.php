@@ -4,16 +4,53 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookingMethod;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PaymentMethodController extends Controller
 {
+    private const PROVIDER_PRESETS = [
+        'cash' => [
+            'label' => 'Pay on arrival / cash',
+            'name' => 'Pay on arrive',
+            'code' => 'cash',
+            'method_type' => 'offline',
+            'visibility' => 'public',
+            'show_on_booking_page' => true,
+        ],
+        'pesapal' => [
+            'label' => 'Pesapal',
+            'name' => 'Pesapal',
+            'code' => 'pesapal',
+            'method_type' => 'online',
+            'visibility' => 'public',
+            'show_on_booking_page' => true,
+        ],
+        'mpesa' => [
+            'label' => 'M-Pesa',
+            'name' => 'Lipa kwa simu (M-Pesa)',
+            'code' => 'mpesa',
+            'method_type' => 'online',
+            'visibility' => 'public',
+            'show_on_booking_page' => true,
+        ],
+        'tigopesa' => [
+            'label' => 'Tigo Pesa',
+            'name' => 'Lipa kwa simu (Tigo Pesa)',
+            'code' => 'tigopesa',
+            'method_type' => 'online',
+            'visibility' => 'public',
+            'show_on_booking_page' => true,
+        ],
+    ];
+
     public function index(): View
     {
         return view('admin.payment-methods.index', [
             'methods' => BookingMethod::query()->orderBy('sort_order')->orderBy('name')->get(),
+            'providerPresets' => self::PROVIDER_PRESETS,
         ]);
     }
 
@@ -37,7 +74,13 @@ class PaymentMethodController extends Controller
 
     public function destroy(BookingMethod $paymentMethod): RedirectResponse
     {
-        $paymentMethod->delete();
+        try {
+            $paymentMethod->delete();
+        } catch (QueryException $exception) {
+            return back()->withErrors([
+                'payment_method_delete' => __('This payment method is still used by bookings or orders, so it cannot be deleted yet.'),
+            ]);
+        }
 
         return back()->with('status', __('Payment method deleted.'));
     }
@@ -65,6 +108,7 @@ class PaymentMethodController extends Controller
             'gateway_public_key' => ['nullable', 'string', 'max:255'],
             'gateway_secret_key' => ['nullable', 'string', 'max:255'],
             'gateway_base_url' => ['nullable', 'url', 'max:255'],
+            'gateway_ipn_id' => ['nullable', 'string', 'max:255'],
         ];
 
         $data = $request->validate($rules);

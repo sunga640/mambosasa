@@ -5,21 +5,31 @@ namespace App\Http\Controllers;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\HotelBranch;
+use App\Models\RoomServiceOrder;
 use App\Models\SystemSetting;
 use App\Support\DashboardMonthCalendar;
 use App\Models\RoomMaintenance;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Artisan;
 
 class MemberDashboardController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request): View|RedirectResponse
     {
+        $user = $request->user();
+        $allowStaffGuestView = $user
+            && $request->boolean('guest_view')
+            && ($user->hasAdminPanelAccess() || $user->hasStaffPanelAccess());
+
+        if ($user && ! $allowStaffGuestView && $user->accountHomeUrl() !== route('dashboard')) {
+            return redirect()->to($user->accountHomeUrl());
+        }
+
         Artisan::call('bookings:expire-pending');
 
-        $user = $request->user();
         $userId = $user->id;
         $email = $user->email;
 
@@ -88,6 +98,16 @@ class MemberDashboardController extends Controller
             ->whereNotNull('check_out')
             ->get(['public_reference', 'check_in', 'check_out', 'status']);
 
+        $recentRoomServiceOrders = RoomServiceOrder::query()
+            ->where(function ($q) use ($userId, $email): void {
+                $q->where('user_id', $userId)
+                    ->orWhereHas('booking', fn ($bookingQuery) => $bookingQuery->where('email', $email));
+            })
+            ->with(['room', 'items'])
+            ->latest()
+            ->limit(6)
+            ->get();
+
         $sys = SystemSetting::current();
 
         return view('dashboard', [
@@ -108,6 +128,7 @@ class MemberDashboardController extends Controller
             'memberBranchesForFilter' => HotelBranch::query()->orderBy('name')->get(),
             'expenseLabels' => $expenseLabels,
             'expenseSeries' => $expenseSeries,
+            'recentRoomServiceOrders' => $recentRoomServiceOrders,
         ]);
     }
 }

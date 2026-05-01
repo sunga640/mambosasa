@@ -2,9 +2,7 @@
 
 namespace App\View\Composers;
 
-use App\Models\RoomType;
 use App\Models\SystemSetting;
-use App\Support\HomeHeroSlides;
 use Illuminate\View\View;
 
 class SiteSettingsComposer
@@ -19,26 +17,10 @@ class SiteSettingsComposer
             }
         }
 
-        $headerNavRooms = RoomType::query()
-            ->where('is_active', true)
-            ->with(['branch', 'rooms' => fn ($q) => $q->availableForBooking()->limit(1)])
-            ->orderBy('name')
-            ->limit(200)
-            ->get();
-
-        $headerRoomsNavPayload = $headerNavRooms->map(fn (RoomType $r) => [
-            'id' => $r->id,
-            'name' => $r->name,
-            'branch' => $r->branch?->name,
-            'thumb' => $r->heroImageUrl() ?? $r->rooms->first()?->cardImageUrl(),
-            'url' => route('site.booking', ['type' => $r->id]),
-        ])->values()->all();
-
-        $view->with('siteSettings', SystemSetting::current());
+        $settings = SystemSetting::current();
+        $view->with('siteSettings', $settings);
         $view->with('siteCartCount', $siteCartCount);
-        $view->with('headerNavRooms', $headerNavRooms);
-        $view->with('headerRoomsNavPayload', $headerRoomsNavPayload);
-        $heroSlides = HomeHeroSlides::displayedUrls();
+        $heroSlides = $settings->resolvedHomeHeroSlides();
         if ($heroSlides === []) {
             $heroSlides = [asset('img/hero/8/2.png')];
         }

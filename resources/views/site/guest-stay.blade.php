@@ -53,6 +53,14 @@
         @endif
 
         @if ($booking->status === BookingStatus::Confirmed && $canOrderService)
+            @if ($dashboardSettings->restaurantIntegrationConfigured())
+                <div class="p-25 mb-30" style="border:1px solid #d1fae5;background:#ecfdf5;">
+                    <p class="fw-600 mb-8" style="color:#0f766e;">{{ __('Restaurant ordering') }}</p>
+                    <p class="text-14 mb-15" style="opacity:.85;">{{ __('Open our connected restaurant system and continue with your active stay details already signed by the hotel system.') }}</p>
+                    <a href="{{ route('site.guest-stay.restaurant', ['token' => $token]) }}" class="button -md -dark-1 bg-dark-1 text-white" style="text-decoration:none;padding:.5rem 1rem;border-radius:8px;display:inline-block;">{{ __('Open restaurant ordering') }}</a>
+                </div>
+            @endif
+
             <h2 class="text-24 mb-15">{{ __('Restaurant & room service') }}</h2>
             <p class="text-14 mb-20" style="opacity:.85;">{{ __('Order from our in-room menu during your stay. Charges may be added to your folio as arranged with reception.') }}</p>
 
@@ -113,6 +121,7 @@
                     <tr style="border-bottom:1px solid #ddd;">
                         <th style="text-align:left;padding:.4rem 0;">{{ __('When') }}</th>
                         <th>{{ __('Status') }}</th>
+                        <th>{{ __('Payment') }}</th>
                         <th>{{ __('Total (TZS)') }}</th>
                     </tr>
                 </thead>
@@ -121,6 +130,29 @@
                         <tr style="border-bottom:1px solid #f0f0f0;">
                             <td style="padding:.4rem 0;">{{ $o->created_at?->format('Y-m-d H:i') }}</td>
                             <td>{{ $o->statusEnum()->label() }}</td>
+                            <td>
+                                <div>{{ $o->paymentStatusLabel() }}</div>
+                                <div class="text-12" style="opacity:.7;">{{ $o->bookingMethod?->name ?: __('Select payment method') }}</div>
+                                @if (\App\Models\RoomServiceOrder::supportsPaymentTracking() && ! $o->isPaid() && $paymentMethods->isNotEmpty())
+                                    <form method="POST" action="{{ route('site.room-service-orders.payment', $o->public_reference) }}" style="display:grid;gap:.5rem;margin-top:.5rem;">
+                                        @csrf
+                                        <select name="booking_method_id" style="padding:.4rem .55rem;border:1px solid #d1d5db;border-radius:8px;">
+                                            <option value="">{{ __('Choose online payment method') }}</option>
+                                            @foreach ($paymentMethods as $method)
+                                                <option value="{{ $method->id }}" @selected($o->booking_method_id === $method->id)>{{ $method->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div style="display:flex;gap:.85rem;flex-wrap:wrap;font-size:.85rem;justify-content:flex-start;align-items:flex-start;">
+                                            <label style="display:flex;align-items:center;gap:.35rem;"><input type="radio" name="payment_choice" value="online" checked> {{ __('Use selected method') }}</label>
+                                            <label style="display:flex;align-items:center;gap:.35rem;"><input type="radio" name="payment_choice" value="cash"> {{ __('Pay cash') }}</label>
+                                            <label style="display:flex;align-items:center;gap:.35rem;"><input type="radio" name="payment_choice" value="bill_later"> {{ __('Keep bill for checkout') }}</label>
+                                        </div>
+                                        <button type="submit" class="button -sm -dark-1 bg-dark-1 text-white" style="border:none;padding:.45rem .85rem;border-radius:8px;cursor:pointer;width:max-content;">
+                                            {{ __('Save payment choice') }}
+                                        </button>
+                                    </form>
+                                @endif
+                            </td>
                             <td>{{ number_format((float) $o->total_amount, 0) }}</td>
                         </tr>
                     @endforeach

@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdatePermissionRequest;
 use App\Models\Permission;
 use App\Repositories\Contracts\PermissionRepositoryInterface;
 use App\Services\Admin\PermissionService;
+use App\Support\PermissionCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -20,8 +21,10 @@ class PermissionController extends Controller
 
     public function index(): View
     {
+        $permissions = $this->permissions->allOrdered();
+
         return view('admin.permissions.index', [
-            'permissions' => Permission::query()->orderBy('name')->paginate(7),
+            'permissionGroups' => PermissionCatalog::groupedCollection($permissions),
         ]);
     }
 

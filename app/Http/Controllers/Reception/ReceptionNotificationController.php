@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Reception;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reception\Concerns\InteractsWithStaffScope;
 use App\Models\DashboardNotification;
+use App\Models\RoomServiceOrder;
 use App\Services\BookingLifecycleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -48,6 +49,19 @@ class ReceptionNotificationController extends Controller
 
         $booking = $notification->booking;
         abort_if(! $booking, 404);
+
+        if (RoomServiceOrder::supportsPaymentTracking()) {
+            $unpaidKitchenOrders = RoomServiceOrder::query()
+                ->where('booking_id', $booking->id)
+                ->where('payment_status', '!=', 'paid')
+                ->count();
+
+            if ($unpaidKitchenOrders > 0) {
+                return back()->withErrors([
+                    'signout' => __('This guest still has :count unpaid kitchen order(s). Clear them before sign-out.', ['count' => $unpaidKitchenOrders]),
+                ]);
+            }
+        }
 
         $notification->forceFill([
             'read_at' => $notification->read_at ?? now(),

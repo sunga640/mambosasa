@@ -4,13 +4,24 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Permission;
 use App\Repositories\Contracts\PermissionRepositoryInterface;
+use App\Support\PermissionCatalog;
 use Illuminate\Database\Eloquent\Collection;
 
 class PermissionRepository implements PermissionRepositoryInterface
 {
     public function allOrdered(): Collection
     {
-        return Permission::query()->orderBy('name')->get();
+        $permissions = Permission::query()->get();
+        $orderMap = collect(PermissionCatalog::definitions())
+            ->pluck('slug')
+            ->flip();
+
+        return $permissions->sortBy(function (Permission $permission) use ($orderMap) {
+            return [
+                $orderMap[PermissionCatalog::normalizeSlug((string) $permission->slug)] ?? 9999,
+                (string) $permission->name,
+            ];
+        })->values();
     }
 
     public function findOrFail(int $id): Permission

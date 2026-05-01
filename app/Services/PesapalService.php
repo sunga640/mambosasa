@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\BookingMethod;
+use App\Models\RoomServiceOrder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -83,4 +84,43 @@ class PesapalService
     $response = Http::withToken($token)->post($url, $payload);
     return $response->json();
 }
+
+    public function createRoomServicePaymentLink(RoomServiceOrder $order, BookingMethod $method): ?array
+    {
+        if (! $method->gateway_public_key) {
+            return null;
+        }
+
+        $token = $this->getAuthToken($method);
+        $ipnId = $method->gateway_ipn_id;
+
+        if (! $ipnId) {
+            $ipnId = $this->registerIpn($method);
+            if ($ipnId) {
+                $method->update(['gateway_ipn_id' => $ipnId]);
+            }
+        }
+
+        $url = rtrim($method->gateway_base_url, '/') . '/api/Transactions/SubmitOrderRequest';
+        $order->loadMissing('booking');
+
+        $payload = [
+            'id' => $order->public_reference,
+            'currency' => 'TZS',
+            'amount' => (float) round((float) $order->total_amount),
+            'description' => 'Room Service Order - ' . $order->public_reference,
+            'callback_url' => route('site.pesapal.callback'),
+            'notification_id' => $ipnId,
+            'billing_address' => [
+                'email_address' => $order->booking?->email ?? ($order->user?->email ?? 'orders@hotel.internal'),
+                'phone_number' => $order->guest_phone ?? ($order->booking?->phone ?? ''),
+                'first_name' => $order->guest_name ?: ($order->booking?->first_name ?? 'Guest'),
+                'last_name' => $order->booking?->last_name ?? 'Order',
+            ],
+        ];
+
+        $response = Http::withToken($token)->post($url, $payload);
+
+        return $response->json();
+    }
 }

@@ -4,392 +4,819 @@
 {{ __('Luxury hotel rooms, online booking, and guest services at :name.', ['name' => $siteSettings->company_name ?? config('app.name')]) }}
 @endsection
 
-
 @section('content')
-<!-- SECTION 1: HERO SLIDER -->
-<section style="position: relative; overflow: visible; background-color: #ffffff; display: flex; flex-direction: column;">
-  <!-- Swiper Slider Background -->
-  <div class="hero__slider js-section-slider"
-       data-gap="0"
-       data-slider-cols="xl-1 lg-1 md-1 sm-1 base-1"
-       data-nav-prev="js-sliderHero-prev"
-       data-nav-next="js-sliderHero-next"
-       data-loop
-       style="height: clamp(500px, 75vh, 850px); width: 100%; position: relative;">
+@php
+    $heroSlides = array_slice($homeHeroSlideUrls ?? [], 0, 3);
+    $heroSlides = $heroSlides !== [] ? $heroSlides : [asset('img/hero/1/1.png')];
+    $heroTitle = strtoupper($siteSettings->hotelDisplayName());
+    $heroSubtitle = __('- YOUR PREMIUM ACCOMMODATION CHOICE IN DAR ES SALAAM -');
+@endphp
 
-    <div class="swiper-wrapper" style="height: 100%;">
-
-@foreach (array_slice($homeHeroSlideUrls ?? [], 0, 2) as $idx => $slideSrc)
-      <div class="swiper-slide" style="height: 100%; width: 100%;">
-        <div style="position: relative; height: 100%; width: 100%;">
-
-          <!-- Background Image with Modern Gradient Overlay -->
-          <div style="position: absolute; inset: 0; background-image: url('{{ $slideSrc }}'); background-size: cover; background-position: center; z-index: 1;">
-            <!-- OVERLAY IMEBORESHWA HAPA: Inatumia gradient kuzuia maandishi yasipotee kwenye picha angavu -->
-            <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 100%); z-index: 2;"></div>
-          </div>
-
-          <!-- Main Headline -->
-          <div style="position: relative; z-index: 3; display: flex; align-items: flex-start; justify-content: center; height: 100%; text-align: center; padding-top: clamp(60px, 12vh, 150px);">
-            <div class="container" style="padding: 0 20px;">
-              <!-- Nimeongeza text-shadow nzito kidogo kwa ajili ya usalama wa ziada -->
-              <h1 style="font-size: clamp(38px, 9vw, 100px); font-weight: 900; color: #ffffff; line-height: 0.9; text-shadow: 0 10px 30px rgba(0,0,0,0.8); text-transform: uppercase; letter-spacing: -1px; margin: 0;">
-                 Enjoy a Luxury <span style="color: #0099cc;">Experience</span><br>
-                <span style="font-size: clamp(14px, 3.5vw, 30px); font-weight: 300; opacity: 0.95; letter-spacing: clamp(4px, 1vw, 12px); display: block; margin-top: 20px; text-transform: uppercase; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                   Your home away from home.
-                </span>
-              </h1>
-              <div style="width: 80px; height: 4px; background: #0099cc; margin: 30px auto 0;"></div>
-            </div>
-          </div>
-
+<section class="site-home-hero">
+    <div class="hero__slider js-section-slider"
+         data-gap="0"
+         data-slider-cols="xl-1 lg-1 md-1 sm-1 base-1"
+         data-nav-prev="js-sliderHero-prev"
+         data-nav-next="js-sliderHero-next"
+         data-loop
+         style="height: clamp(860px, 100vh, 1120px); width: 100%; position: relative;">
+        <div class="swiper-wrapper" style="height: 100%;">
+            @foreach ($heroSlides as $slideSrc)
+                <div class="swiper-slide" style="height: 100%;">
+                    <div class="site-home-hero__slide">
+                        <img
+                            src="{{ $slideSrc }}"
+                            alt="{{ $siteSettings->hotelDisplayName() }}"
+                            sizes="100vw"
+                            referrerpolicy="no-referrer"
+                            @if($loop->first)
+                                fetchpriority="high"
+                                loading="eager"
+                                decoding="sync"
+                            @else
+                                loading="lazy"
+                                decoding="async"
+                            @endif
+                        >
+                        <div class="site-home-hero__overlay"></div>
+                    </div>
+                </div>
+            @endforeach
         </div>
-      </div>
-      @endforeach
+
+        <div class="site-home-hero__content">
+            <div class="container">
+                <div class="row justify-center text-center">
+                    <div class="col-xl-12 col-lg-12">
+                        <span class="site-kicker">{{ __('Guest reservations') }}</span>
+                        @php
+                            $heroTitleParts = preg_split('/\s+/', trim($heroTitle), 2) ?: [$heroTitle, ''];
+                        @endphp
+                        <h1 class="site-home-hero__title">
+                            <span class="site-home-hero__title-line site-home-hero__title-line--primary">{{ $heroTitleParts[0] ?? $heroTitle }}</span>
+                            <span class="site-home-hero__title-line site-home-hero__title-line--secondary">{{ $heroTitleParts[1] ?? '' }}</span>
+                        </h1>
+                        <p class="site-home-hero__text">{{ $heroSubtitle }}</p>
+                        <div class="site-home-hero__actions">
+                            <a href="{{ route('site.page', ['slug' => 'pricing']) }}" class="site-home-hero__primary">{{ __('Explore Rooms') }}</a>
+                            <a href="{{ route('site.page', ['slug' => 'about']) }}" class="site-home-hero__secondary">{{ __('Our Story') }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Navigation Arrows -->
-    <div class="d-none d-md-flex" style="position: absolute; top: 45%; width: 100%; justify-content: space-between; padding: 0 50px; transform: translateY(-50%); z-index: 10; pointer-events: none;">
-      <button class="js-sliderHero-prev" style="pointer-events: auto; width: 55px; height: 55px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
-        <i class="icon-arrow-left text-20"></i>
-      </button>
-      <button class="js-sliderHero-next" style="pointer-events: auto; width: 55px; height: 55px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
-        <i class="icon-arrow-right text-20"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- FLOATING SEARCH CARD -->
-  <div style="position: relative; z-index: 25; margin: -100px auto 40px; width: 94%; max-width: 1200px; background: #ffffff; border-radius: clamp(20px, 4vw, 40px); padding: clamp(25px, 5vw, 50px); box-shadow: 0 30px 70px rgba(0,0,0,0.15);">
-
-    @php
-      $hour = date('H');
-      $greeting = ($hour < 12) ? 'Good Morning!' : (($hour < 17) ? 'Good Afternoon!' : 'Good Evening!');
-    @endphp
-
-    <div style="margin-bottom: clamp(20px, 4vw, 35px); text-align: center;">
-      <span style="text-transform: uppercase; letter-spacing: 3px; font-size: clamp(10px, 2vw, 13px); color: #0099cc; font-weight: 700; display: block; margin-bottom: 10px;">{{ $greeting }} Welcome Home</span>
-      <h2 style="font-size: clamp(24px, 4vw, 38px); font-weight: 800; color: #1a2b48; margin: 0; line-height: 1.2;">Experience Pure Serenity in Safe Hands</h2>
-      <p class="d-none d-sm-block" style="font-size: 17px; color: #64748b; margin: 10px 0 0 0; font-style: italic;">"More than a Hotel, A Place for Your Precious Memories"</p>
-    </div>
-
-    <!-- Hapa kodi ya fomu yako inaendelea... -->
-  </div>
 </section>
-
-<!-- SPACER FOR NEXT SECTION (Imepunguzwa kuwa responsive) -->
-<div style="height: clamp(50px, 10vh, 150px);"></div>
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  var btn = document.querySelector('.js-sliderHero-next');
-  if (btn) {
-    setInterval(function () {
-      btn.click();
-    }, 7000);
-  }
+    var heroSlider = document.querySelector('.site-home-hero .js-section-slider');
+    if (!heroSlider) return;
+
+    var started = false;
+
+    var startAutoSlide = function () {
+        if (started || !heroSlider.swiper) return false;
+        started = true;
+        setInterval(function () {
+            if (heroSlider.swiper && !document.hidden) {
+                heroSlider.swiper.slideNext();
+            }
+        }, 5000);
+        return true;
+    };
+
+    if (!startAutoSlide()) {
+        var retries = 0;
+        var timer = setInterval(function () {
+            retries += 1;
+            if (startAutoSlide() || retries > 20) {
+                clearInterval(timer);
+            }
+        }, 350);
+    }
 });
 </script>
 @endpush
 
-    <!-- Nimeongeza margin-top: -50px na kupunguza padding ya juu kuwa 30px tu -->
-<section style="margin-top: -50px; padding: 30px 0 60px; background-color: #ffffff; position: relative; z-index: 10; overflow: hidden;">
+<section class="site-home-intro">
     <div class="container">
-
-        <!-- TOP CONTENT SECTION -->
-        <div class="row justify-center text-center">
-            <div class="col-xl-9 col-lg-11">
-
-                <!-- Subtitle -->
-                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px;">
-                    <div style="width: 30px; height: 1px; background: #2563eb;"></div>
-                    <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 2px; color: #2563eb;">
-                        {{ $siteSettings->company_name ?? config('app.name') }}
-                    </div>
-                    <div style="width: 30px; height: 1px; background: #2563eb;"></div>
-                </div>
-
-                <!-- Long Heading (Reduced margin-bottom) -->
-                <h2 style="font-size: clamp(26px, 3.5vw, 42px); font-weight: 800; line-height: 1.1; color: #051039; margin-bottom: 15px; letter-spacing: -1px;">
-                    {{ $siteSettings->home_section1_heading ?: __('Experience the Pinnacle of Coastal Luxury and Thoughtful Tanzanian Hospitality') }}
+        <div class="row justify-between items-end y-gap-24">
+            <div class="col-xl-8 col-lg-9">
+                <span class="site-kicker">{{ $siteSettings->company_name ?? config('app.name') }}</span>
+                <h2 class="site-home-intro__title">
+                    {{ $siteSettings->home_section1_heading ?: __('Elegant comfort by the coast') }}
                 </h2>
-
-                <!-- Body Text (Compact) -->
-                <div class="row justify-center">
-                    <div class="col-lg-8">
-                        <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 20px;">
-                            @if ($siteSettings->home_section1_body)
-                                {!! nl2br(e($siteSettings->home_section1_body)) !!}
-                            @else
-                                {{ __(':name invites you to refined elegance where every detail is curated for your comfort. From well-appointed rooms to our dedicated team, we ensure your stay is seamless and memorable.', ['name' => $siteSettings->company_name ?? config('app.name')]) }}
-                            @endif
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Advanced Pill Button (More Compact) -->
-                <div style="margin-top: 5px;">
-                    <a href="{{ route('site.page', ['slug' => 'about']) }}"
-                       style="display: inline-flex; align-items: center; padding: 6px 6px 6px 20px; background: #051039; color: #ffffff; border-radius: 50px; font-weight: 700; text-decoration: none; font-size: 13px; transition: 0.3s;">
-                        {{ __('Discover Our Story') }}
-                        <div style="width: 30px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 12px;">
-                            <i class="icon-arrow-top-right" style="font-size: 10px;"></i>
-                        </div>
-                    </a>
-                </div>
-
+                <p class="site-home-intro__text">
+                    @if ($siteSettings->home_section1_body)
+                        {!! nl2br(e(\Illuminate\Support\Str::limit($siteSettings->home_section1_body, 420))) !!}
+                    @else
+                        {{ __(':name offers refined rooms, warm hospitality, and a smooth stay from arrival to departure.', ['name' => $siteSettings->company_name ?? config('app.name')]) }}
+                    @endif
+                </p>
+            </div>
+            <div class="col-xl-3 col-lg-3">
+                <a href="{{ route('site.page', ['slug' => 'about']) }}" class="site-home-intro__cta">{{ __('Discover') }}</a>
             </div>
         </div>
 
-        <!-- STATS SECTION (Inline Styled & Tight Spacing) -->
-        <div class="row justify-center text-center" style="margin-top: 40px;">
-            <div class="col-xl-10">
-                <div class="row y-gap-20 justify-between items-center">
-
-                    <!-- Stat Item 1 -->
-                    <div class="col-md-3 col-6">
-                        <div style="padding: 5px;">
-                            <h3 style="font-size: 48px; font-weight: 800; color: #051039; margin-bottom: 2px; letter-spacing: -2px; line-height: 1;">
-                                {{ $stats['customers_display'] }}
-                            </h3>
-                            <div style="width: 15px; height: 2px; background: #2563eb; margin: 0 auto 8px;"></div>
-                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #697488; letter-spacing: 1px;">
-                                {{ $stats['caption_guests'] ?? __('Happy Guests') }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Stat Item 2 -->
-                    <div class="col-md-3 col-6">
-                        <div style="padding: 5px;">
-                            <h3 style="font-size: 48px; font-weight: 800; color: #051039; margin-bottom: 2px; letter-spacing: -2px; line-height: 1;">
-                                {{ $stats['rooms_count'] }}
-                            </h3>
-                            <div style="width: 15px; height: 2px; background: #2563eb; margin: 0 auto 8px;"></div>
-                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #697488; letter-spacing: 1px;">
-                                {{ $stats['caption_rooms'] ?? __('Luxury Rooms') }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Stat Item 3 -->
-                    <div class="col-md-3 col-6">
-                        <div style="padding: 5px;">
-                            <h3 style="font-size: 48px; font-weight: 800; color: #051039; margin-bottom: 2px; letter-spacing: -2px; line-height: 1;">
-                                {{ $stats['pools_count'] }}
-                            </h3>
-                            <div style="width: 15px; height: 2px; background: #2563eb; margin: 0 auto 8px;"></div>
-                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #697488; letter-spacing: 1px;">
-                                {{ $stats['caption_pools'] ?? __('Wellness Spots') }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Stat Item 4 -->
-                    <div class="col-md-3 col-6">
-                        <div style="padding: 5px;">
-                            <h3 style="font-size: 48px; font-weight: 800; color: #051039; margin-bottom: 2px; letter-spacing: -2px; line-height: 1;">
-                                {{ $stats['restaurants_count'] }}
-                            </h3>
-                            <div style="width: 15px; height: 2px; background: #2563eb; margin: 0 auto 8px;"></div>
-                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #697488; letter-spacing: 1px;">
-                                {{ $stats['caption_dining'] ?? __('Dining Experiences') }}
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-   <section id="rooms" class="home-rooms-band" style="scroll-margin-top:120px;padding:72px 0 96px;background:linear-gradient(165deg,#f4e8d4 0%,#e9d0a8 40%,#deb892 100%);position:relative;overflow:hidden;">
-  <div class="container" style="position:relative;z-index:1;">
-    <div style="text-align:center;margin-bottom:42px;max-width:1000px;margin-left:auto;margin-right:auto;padding:0 16px;">
-        <div style="display:flex;align-items:center;justify-content:center;gap:15px;margin-bottom:12px;">
-            <div style="width:40px;height:1px;background:#8b2942;"></div>
-            <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#8b2942;">{{ __('World-Class Accommodation') }}</span>
-            <div style="width:40px;height:1px;background:#8b2942;"></div>
-        </div>
-        <h2 style="font-size:clamp(28px,4vw,46px);font-weight:800;color:#1a0f0a;line-height:1.12;letter-spacing:-1px;margin:0;">
-            {{ __('Experience Unmatched Coastal Luxury and Refined Comfort in Our Sanctuary') }}
-        </h2>
-        <p style="font-size:16px;color:#4a3728;line-height:1.6;max-width:650px;margin:18px auto 0;">
-            {{ __('From ocean-view suites to cozy garden retreats, explore our collection of rooms designed to provide an unforgettable experience.') }}
-        </p>
-    </div>
-
-    <div class="js-section-slider"
-         data-gap="16"
-         data-slider-cols="xl-4 lg-3 md-2 sm-1 base-1"
-         data-nav-prev="js-rooms-prev"
-         data-nav-next="js-rooms-next"
-         style="position:relative;">
-
-      <div class="swiper-wrapper">
-        @forelse ($homeRoomTypes as $roomType)
-          @php
-            $sampleRoom = $roomType->rooms->first();
-            $bgImage = $roomType->heroImageUrl() ?? $sampleRoom?->cardImageUrl() ?? asset('img/cards/rooms/3/1.png');
-          @endphp
-          <div class="swiper-slide">
-            <article class="home-rtc-card" style="max-width:340px;margin:0 auto;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 22px 48px rgba(26,15,10,0.18);border:1px solid rgba(255,255,255,0.65);">
-              <div style="position:relative;height:220px;background-image:url('{{ $bgImage }}');background-size:cover;background-position:center;">
-                <span style="position:absolute;top:14px;left:-6px;background:#8b2942;color:#fff;font-size:11px;font-weight:800;padding:6px 28px 6px 18px;clip-path:polygon(0 0,100% 0,92% 100%,0 100%);letter-spacing:.06em;">{{ __('Featured') }}</span>
-              </div>
-              <div style="position:relative;padding:1.35rem 1.35rem 0;min-height:210px;">
-                <h3 style="font-size:1.35rem;font-weight:800;color:#111827;line-height:1.25;margin:0 0 6px;">{{ $roomType->name }}</h3>
-                <p style="font-size:13px;color:#6b7280;margin:0;">{{ $roomType->branch?->name ?? __('Our hotel') }} · {{ __('Room type') }}</p>
-                <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:1.25rem;padding-top:1.1rem;border-top:1px solid #f3f4f6;">
-                  <div style="margin-left:-1.35rem;margin-bottom:-2px;align-self:flex-end;">
-                    <a href="{{ route('site.booking', ['type' => $roomType->id]) }}" class="home-rtc-card__book" title="{{ __('Book now') }}">{{ __('Book') }}</a>
-                  </div>
-                  <div style="text-align:right;padding-bottom:4px;">
-                    <div style="font-size:1.65rem;font-weight:800;color:#c41e3a;line-height:1;">{{ number_format((int) round((float) $roomType->price), 0) }} <span style="font-size:.95rem;font-weight:600;color:#374151;">TZS</span></div>
-                    <div style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">{{ __('per night') }}</div>
-                  </div>
-                </div>
-              </div>
+        <div class="site-home-stats">
+            <article>
+                <strong>{{ $stats['customers_display'] }}</strong>
+                <span>{{ $stats['caption_guests'] ?? __('Happy Guests') }}</span>
             </article>
-          </div>
-        @empty
-          <div class="swiper-slide" style="text-align:center;padding:50px;">{{ __('No rooms available.') }}</div>
-        @endforelse
-      </div>
-
-      <div style="display:flex;justify-content:center;gap:20px;margin-top:36px;">
-        <button type="button" class="js-rooms-prev" style="width:56px;height:56px;border-radius:50%;border:2px solid #1a0f0a;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-          <i class="icon-arrow-left text-20"></i>
-        </button>
-        <button type="button" class="js-rooms-next" style="width:56px;height:56px;border-radius:50%;border:none;background:#1a0f0a;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-          <i class="icon-arrow-right text-20"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
-<style>
-  .home-rtc-card__book {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 5.5rem;
-    padding: 0.65rem 1.25rem;
-    border-radius: 0 16px 0 0;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: #fff !important;
-    background: linear-gradient(135deg, #1e4d6b 0%, #122223 48%, #8b2942 100%);
-    box-shadow: 0 10px 26px rgba(18, 34, 35, 0.28);
-    border: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-  }
-  .home-rtc-card__book:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 34px rgba(18, 34, 35, 0.35);
-    filter: brightness(1.06);
-  }
-</style>
-
-@if(($homeHotelServices ?? collect())->isNotEmpty())
-<section style="padding:72px 0;background:#f8fafc;">
-  <div class="container">
-    <div style="text-align:center;margin-bottom:28px;">
-      <span style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#2563eb;">{{ __('Hotel Services') }}</span>
-      <h2 style="font-size:clamp(26px,3.8vw,40px);font-weight:800;color:#051039;margin:10px 0 0;">{{ __('Services You Can Request') }}</h2>
-    </div>
-    <div class="row y-gap-20">
-      @foreach($homeHotelServices as $svc)
-        <div class="col-lg-4 col-md-6">
-          <article class="site-card-hover" style="height:100%;display:flex;flex-direction:column;border:1px solid #e2e8f0;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);">
-            @if($svc->imageUrl())
-              <div style="height:170px;overflow:hidden;"><img src="{{ $svc->imageUrl() }}" alt="{{ $svc->name }}" style="width:100%;height:100%;object-fit:cover;"></div>
-            @endif
-            <div style="padding:1rem 1rem 1.15rem;">
-              <h3 style="font-size:1.05rem;font-weight:700;color:#0f172a;margin:0 0 .45rem;">{{ $svc->name }}</h3>
-              <p style="font-size:.84rem;color:#64748b;margin:0 0 .6rem;text-transform:uppercase;letter-spacing:.06em;">{{ $svc->category ?: __('Service') }}</p>
-              <p style="font-size:.9rem;line-height:1.55;color:#475569;margin:0;">{{ \Illuminate\Support\Str::limit($svc->description ?: __('Service details available during booking.'), 120) }}</p>
-            </div>
-          </article>
+            <article>
+                <strong>{{ $stats['rooms_count'] }}</strong>
+                <span>{{ $stats['caption_rooms'] ?? __('Luxury Rooms') }}</span>
+            </article>
+            <article>
+                <strong>{{ $stats['pools_count'] }}</strong>
+                <span>{{ $stats['caption_pools'] ?? __('Wellness') }}</span>
+            </article>
+            <article>
+                <strong>{{ $stats['restaurants_count'] }}</strong>
+                <span>{{ $stats['caption_dining'] ?? __('Dining') }}</span>
+            </article>
         </div>
-      @endforeach
     </div>
-  </div>
+</section>
+
+@include('site.partials.hotel-views-gallery')
+
+@if(($homeBranches ?? collect())->isNotEmpty())
+<section class="site-home-branches">
+    <div class="container">
+        <div class="site-home-split site-home-split--branch-reverse">
+            <div class="site-home-split__intro">
+                <span class="site-kicker">{{ __('Our Branches') }}</span>
+                <h2>{{ __('Stay with us wherever your journey takes you.') }}</h2>
+                <p>{{ __('Each Mambosasa location is prepared to offer attentive hospitality, comfortable rooms, and easy access to the neighborhoods our guests visit most.') }}</p>
+                <a href="{{ route('site.branches') }}" class="site-home-split__button">{{ __('View all branches') }}</a>
+            </div>
+
+            <div class="site-home-split__cards">
+                @foreach($homeBranches->take(3) as $branch)
+                    @php
+                        $branchImage = collect($branch->preview_images ?? [])->filter()->first() ?: $branch->logo_path;
+                        $branchLocation = collect([$branch->location_address, $branch->city, $branch->country])->filter()->implode(', ');
+                        $branchImageUrl = $branchImage
+                            ? (str_starts_with((string) $branchImage, 'http')
+                                ? $branchImage
+                                : \App\Support\PublicDisk::url((string) $branchImage))
+                            : asset('img/pageHero/4.png');
+                    @endphp
+                    <article class="site-branch-card">
+                        <div class="site-branch-card__media" style="background-image:url('{{ $branchImageUrl }}');"></div>
+                        <div class="site-branch-card__body">
+                            <span class="site-branch-card__tag">{{ $branch->city ?: __('Branch') }}</span>
+                            <h3>{{ $branch->name }}</h3>
+                            <p>{{ \Illuminate\Support\Str::limit($branch->extra_notes ?: ($branchLocation ?: __('Active hotel branch in our portfolio.')), 120) }}</p>
+                            <div class="site-branch-card__meta">
+                                <span>{{ trans_choice(':count room|:count rooms', $branch->rooms_count, ['count' => $branch->rooms_count]) }}</span>
+                                @if ($branch->contact_phone)
+                                    <span>{{ $branch->contact_phone }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </div>
 </section>
 @endif
 
-    @php
-        $newsletterSlides = $homeHeroSlideUrls ?? [];
-        if ($newsletterSlides === []) {
-            $newsletterSlides = [asset('img/hero/8/2.png')];
-        }
-        // Kuchukua picha ya tatu au ya kwanza kama background
-        $newsletterBgUrl = $newsletterSlides[(3 - 1) % count($newsletterSlides)];
-    @endphp
-
-    <section class="home-newsletter-section" style="position: relative; padding: 140px 0 120px; background-image: url('{{ $newsletterBgUrl }}'); background-size: cover; background-position: center; background-attachment: fixed; display: flex; align-items: center; overflow: hidden;">
-
-      <!-- Dark Overlay kwa ajili ya usomaji mzuri wa maandishi -->
-      <div style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 1;"></div>
-
-      <div class="container" style="position: relative; z-index: 2;">
-        <div class="row justify-center text-center">
-          <div class="col-xl-7 col-lg-9 col-md-11">
-
-            <!-- Icon -->
-            <div class="icon-email" style="font-size: 70px; color: #ffffff; margin-bottom: 35px; opacity: 0.9; display: flex; justify-content: center;"></div>
-
-            <!-- Heading -->
-            <div style="margin-bottom: 40px;">
-              <h2 style="font-size: 46px; font-weight: 800; color: #ffffff; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-                {{ __('Would you like to receive hotel news and special offers?') }}
-              </h2>
-              <p style="color: rgba(255,255,255,0.8); font-size: 18px; margin-top: 15px;">{{ __('Join our community and stay updated with the latest luxury deals.') }}</p>
+<section id="rooms" class="site-home-rooms">
+    <div class="container">
+        <div class="site-home-split">
+            <div class="site-home-split__intro">
+                <span class="site-kicker">{{ __('Room Types') }}</span>
+                <h2>{{ __('Rooms designed for rest, work, and longer stays') }}</h2>
+                <p>{{ __('Choose from carefully prepared room categories with inviting interiors, practical amenities, and the calm atmosphere guests expect after a full day in the city.') }}</p>
             </div>
 
-            <!-- Flash Messages -->
-            @if (session('newsletter_ok'))
-              <p style="background: #22c55e; color: white; padding: 12px 25px; border-radius: 50px; margin-bottom: 20px; font-weight: 600;">{{ session('newsletter_ok') }}</p>
-            @endif
-            @error('email')
-              <p style="background: #ef4444; color: white; padding: 12px 25px; border-radius: 50px; margin-bottom: 20px; font-weight: 600;">{{ $message }}</p>
-            @enderror
-
-            <!-- Form -->
-            <form method="post" action="{{ route('site.newsletter.subscribe') }}" style="max-width: 550px; margin: 0 auto; position: relative;">
-              @csrf
-              <div style="position: relative; display: flex; align-items: center; background: #ffffff; border-radius: 60px; padding: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-
-                <label class="sr-only" for="site-newsletter-email">{{ __('Your email') }}</label>
-
-                <input id="site-newsletter-email"
-                       type="email"
-                       name="email"
-                       value="{{ old('email') }}"
-                       required
-                       autocomplete="email"
-                       placeholder="{{ __('Enter your email address') }}"
-                       style="width: 100%; border: none; padding: 15px 30px; font-size: 16px; border-radius: 60px; outline: none; color: #111827;">
-
-                <button type="submit"
-                        aria-label="{{ __('Subscribe') }}"
-                        style="background: #111827; color: #ffffff; width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; transition: 0.3s; cursor: pointer; flex-shrink: 0; margin-left: 10px;">
-                  <i class="icon-arrow-right text-20"></i>
-                </button>
-
-              </div>
-            </form>
-
-            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 20px;">{{ __('Your privacy is safe with us. Unsubscribe at any time.') }}</p>
-
-          </div>
+            <div class="site-home-split__cards">
+                <div class="js-section-slider"
+                     data-gap="18"
+                     data-slider-cols="xl-2 lg-2 md-1 sm-1 base-1"
+                     data-nav-prev="js-rooms-prev"
+                     data-nav-next="js-rooms-next"
+                     data-loop>
+                    <div class="swiper-wrapper">
+                        @forelse ($homeRoomTypes as $roomType)
+                            @php
+                                $sampleRoom = $roomType->rooms->first();
+                                $bgImage = $roomType->heroImageUrl() ?? $sampleRoom?->cardImageUrl() ?? asset('img/cards/rooms/3/1.png');
+                            @endphp
+                            <div class="swiper-slide">
+                                <article class="site-hover-tile">
+                                    <div class="site-hover-tile__media" style="background-image:url('{{ $bgImage }}');"></div>
+                                    <div class="site-hover-tile__pointer-glow"></div>
+                                    <div class="site-hover-tile__overlay">
+                                        <span class="site-hover-tile__tag">{{ $roomType->branch?->name ?? __('Room type') }}</span>
+                                        <h3>{{ $roomType->name }}</h3>
+                                        <p>{{ \Illuminate\Support\Str::limit(strip_tags($roomType->description ?? __('Elegant comfort with a restful atmosphere.')), 95) }}</p>
+                                        <div class="site-hover-tile__footer">
+                                            <strong>{{ number_format((int) round((float) $roomType->price), 0) }} TZS</strong>
+                                            <a href="{{ route('site.booking', ['type' => $roomType->id]) }}">{{ __('Book now') }}</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        @empty
+                            <div class="swiper-slide">
+                                <div class="site-hover-tile site-hover-tile--empty">{{ __('No rooms available.') }}</div>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+                <div class="site-slider-arrows">
+                    <button type="button" class="js-rooms-prev"><i class="icon-arrow-left text-18"></i></button>
+                    <button type="button" class="js-rooms-next"><i class="icon-arrow-right text-18"></i></button>
+                </div>
+            </div>
         </div>
-      </div>
-    </section>
+    </div>
+</section>
 
+@if(($homeHotelServices ?? collect())->isNotEmpty())
+@include('site.partials.services-zigzag', [
+    'services' => $homeHotelServices->take(5),
+    'sectionClass' => 'site-home-services',
+    'title' => __('Guest services that feel elevated'),
+    'description' => __('From dining and in-room comfort to thoughtful stay support, our guest services are arranged to make every visit feel smooth, personal, and well cared for.'),
+])
+@endif
+
+<style>
+    .site-home-hero {
+        position: relative;
+        background: #102523;
+        padding-bottom: 0;
+        margin-top: 0 !important;
+    }
+    .site-home-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+        background:
+            linear-gradient(180deg, rgba(9, 21, 24, 0.24) 0%, rgba(9, 21, 24, 0.05) 16%, rgba(9, 21, 24, 0.02) 36%, rgba(9, 21, 24, 0.18) 100%),
+            radial-gradient(circle at center, rgba(255, 213, 51, 0.04) 0%, rgba(255, 213, 51, 0) 58%);
+    }
+    .site-home-hero__slide {
+        position: relative;
+        height: 100%;
+        background: #102523;
+        overflow: hidden;
+    }
+    .site-home-hero__slide img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        object-position: center;
+        image-rendering: auto;
+        filter: contrast(1.08) saturate(1.04);
+    }
+    .site-home-hero .swiper-wrapper,
+    .site-home-hero .swiper-slide {
+        will-change: transform;
+    }
+    .site-home-hero__overlay {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(115deg, rgba(10, 24, 30, 0.16) 0%, rgba(10, 24, 30, 0.06) 45%, rgba(10, 24, 30, 0.22) 100%),
+            linear-gradient(180deg, rgba(12, 31, 36, 0.1) 0%, rgba(12, 31, 36, 0.2) 36%, rgba(12, 31, 36, 0.84) 100%);
+        opacity: 0.98;
+        transition: background 0.35s ease, opacity 0.35s ease;
+    }
+    .site-home-hero__slide:hover .site-home-hero__overlay,
+    .site-home-hero__slide:focus-within .site-home-hero__overlay {
+        background:
+            linear-gradient(115deg, rgba(10, 24, 30, 0.14) 0%, rgba(10, 24, 30, 0.06) 42%, rgba(10, 24, 30, 0.24) 100%),
+            linear-gradient(180deg, rgba(12, 31, 36, 0.08) 0%, rgba(12, 31, 36, 0.24) 32%, rgba(12, 31, 36, 0.92) 100%);
+        opacity: 1;
+    }
+    .site-home-hero__content {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        padding-top: 5.75rem;
+    }
+    .site-home-hero__content .row {
+        width: 100%;
+        transform: translateY(-2.2rem);
+    }
+    .site-home-hero__title {
+        margin: 0.8rem 0;
+        color: #fff;
+        font-size: clamp(3.1rem, 7.1vw, 6.15rem);
+        font-weight: 700;
+        line-height: 0.95;
+        max-width: min(100%, 22ch);
+        margin-left: auto;
+        margin-right: auto;
+        letter-spacing: 0.02em;
+        text-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+    }
+    .site-home-hero__title-line {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .site-home-hero__title-line--primary {
+        width: fit-content;
+        max-width: 100%;
+    }
+    .site-home-hero__title-line--secondary {
+        width: fit-content;
+        max-width: 82%;
+    }
+    .site-home-hero__text {
+        max-width: min(100%, 72rem);
+        color: #ffd533;
+        font-size: clamp(1.1rem, 2vw, 1.7rem);
+        margin-bottom: 1.4rem;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.45;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+    }
+    .site-home-hero__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        justify-content: center;
+    }
+    .site-home-hero__primary,
+    .site-home-hero__secondary,
+    .site-home-intro__cta,
+    .site-home-split__button,
+    .site-home-hero__welcome-actions a,
+    .site-hover-tile__footer a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.8rem;
+        padding: 0.82rem 1.2rem;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .site-home-hero__primary {
+        background: linear-gradient(135deg, #b8955d 0%, #d5b47a 100%);
+        color: #13211e !important;
+    }
+    .site-home-hero__secondary {
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff !important;
+    }
+    .site-home-hero__welcome-card {
+        position: relative;
+        z-index: 5;
+        margin: -5.2rem auto 0;
+        width: min(92%, 68rem);
+        background: rgba(255, 250, 244, 0.96);
+        border: 1px solid rgba(184, 149, 93, 0.18);
+        border-radius: 1.35rem;
+        padding: 1rem 1.15rem;
+        box-shadow: 0 18px 34px rgba(20, 33, 37, 0.1);
+    }
+    .site-home-intro {
+        padding-top: 8.8rem;
+    }
+    .site-home-hero__welcome-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1rem;
+        align-items: center;
+    }
+    .site-home-hero__welcome-label,
+    .site-branch-card__tag,
+    .site-hover-tile__tag,
+    .site-service-panel__eyebrow {
+        display: inline-flex;
+        width: fit-content;
+        padding: 0.42rem 0.68rem;
+        border-radius: 999px;
+        background: rgba(184, 149, 93, 0.12);
+        color: #9a7641;
+        font-size: 0.64rem;
+        letter-spacing: 0.14em;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .site-home-hero__welcome-grid h2 {
+        margin: 0.45rem 0 0;
+        font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+        line-height: 1.05;
+        color: #17352f;
+    }
+    .site-home-hero__welcome-grid p,
+    .site-home-hero__welcome-actions span,
+    .site-home-intro__text,
+    .site-home-split__intro p,
+    .site-branch-card p,
+    .site-hover-tile__overlay p,
+    .site-service-panel__body p {
+        margin: 0;
+        color: #5c6b6d;
+        font-size: 0.84rem;
+        line-height: 1.7;
+    }
+    .site-home-hero__welcome-actions {
+        display: grid;
+        gap: 0.45rem;
+        justify-items: end;
+        text-align: right;
+    }
+    .site-home-hero__welcome-actions a,
+    .site-home-intro__cta,
+    .site-home-split__button,
+    .site-hover-tile__footer a {
+        background: #17352f;
+        color: #fff !important;
+    }
+    .site-home-intro,
+    .site-home-branches,
+    .site-home-rooms,
+    .site-home-services {
+        padding: 4.6rem 0;
+    }
+    .site-home-intro__title,
+    .site-home-split__intro h2,
+    .site-service-panel__body h3,
+    .site-branch-card h3,
+    .site-hover-tile__overlay h3 {
+        font-size: clamp(2rem, 3.2vw, 3rem);
+        line-height: 0.98;
+        color: #17352f;
+        margin: 0.85rem 0;
+    }
+    .site-home-stats {
+        margin-top: 2rem;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+    .site-home-stats article {
+        background: linear-gradient(180deg, #fffdf8 0%, #f6f0e5 100%);
+        border: 1px solid rgba(184, 149, 93, 0.16);
+        border-radius: 0;
+        padding: 1rem;
+        transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+    .site-home-stats article:hover {
+        transform: translateY(-6px);
+        border-color: rgba(23, 53, 47, 0.18);
+        box-shadow: 0 18px 36px rgba(23, 53, 47, 0.08);
+    }
+    .site-home-stats strong {
+        display: block;
+        font-size: clamp(1.45rem, 3vw, 2.1rem);
+        line-height: 1;
+        color: #17352f;
+        font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+    .site-home-stats span {
+        display: block;
+        margin-top: 0.45rem;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #8a7656;
+        font-weight: 700;
+    }
+    .site-home-branches {
+        background: linear-gradient(180deg, #fff 0%, #faf7f1 100%);
+    }
+    .site-home-rooms {
+        background:
+            radial-gradient(circle at top right, rgba(184, 149, 93, 0.13), transparent 28%),
+            linear-gradient(180deg, #f8f3eb 0%, #f3ece1 100%);
+    }
+    .site-home-services {
+        background: #fff;
+    }
+    .site-home-split {
+        display: grid;
+        grid-template-columns: minmax(260px, 0.88fr) minmax(0, 1.12fr);
+        gap: 2rem;
+        align-items: start;
+    }
+    .site-home-split__intro {
+        position: sticky;
+        top: 8rem;
+    }
+    .site-home-split__cards {
+        min-width: 0;
+    }
+    .site-home-rooms .site-home-split {
+        grid-template-columns: minmax(320px, 0.98fr) minmax(0, 1.02fr);
+        gap: clamp(1.25rem, 3vw, 2.8rem);
+    }
+    .site-home-rooms .site-home-split__intro {
+        max-width: 34rem;
+    }
+    .site-home-rooms .site-home-split__intro h2 {
+        font-size: clamp(2.6rem, 4.6vw, 4.2rem);
+        line-height: 0.92;
+        margin-bottom: 1rem;
+    }
+    .site-home-rooms .site-home-split__intro p {
+        font-size: 1.03rem;
+        line-height: 1.9;
+        max-width: 32rem;
+    }
+    .site-home-rooms .site-home-split__cards {
+        position: relative;
+        overflow: hidden;
+        padding-left: 0.15rem;
+    }
+    .site-home-split--branch-reverse {
+        grid-template-columns: minmax(0, 1.12fr) minmax(260px, 0.88fr);
+    }
+    .site-home-split--branch-reverse .site-home-split__cards {
+        order: 1;
+    }
+    .site-home-split--branch-reverse .site-home-split__intro {
+        order: 2;
+        text-align: left;
+    }
+    .site-home-split--branch-reverse .site-home-split__button {
+        margin-left: 0;
+    }
+    .site-home-rooms .site-home-split__cards .js-section-slider,
+    .site-home-rooms .site-home-split__cards .swiper-wrapper,
+    .site-home-rooms .site-home-split__cards .swiper-slide {
+        max-width: 100%;
+    }
+    .site-home-split__button {
+        margin-top: 1.2rem;
+    }
+    .site-branch-card {
+        display: grid;
+        grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 0;
+        background: #fff;
+        border: 1px solid rgba(23, 53, 47, 0.08);
+        box-shadow: 0 14px 30px rgba(23, 53, 47, 0.08);
+        transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+    .site-branch-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 42px rgba(23, 53, 47, 0.11);
+        border-color: rgba(23, 53, 47, 0.16);
+    }
+    .site-branch-card + .site-branch-card {
+        margin-top: 1rem;
+    }
+    .site-branch-card__media {
+        min-height: 170px;
+        border-radius: 0;
+        background-size: cover;
+        background-position: center;
+    }
+    .site-branch-card__body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+        justify-content: center;
+    }
+    .site-branch-card__body h3 {
+        font-size: clamp(1.35rem, 2vw, 1.85rem);
+        margin: 0;
+    }
+    .site-branch-card__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .site-branch-card__meta span {
+        padding: 0.45rem 0.7rem;
+        border-radius: 999px;
+        background: #f7f2e8;
+        font-size: 0.68rem;
+        color: #6b5a41;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+    .site-hover-tile {
+        position: relative;
+        min-height: 30rem;
+        border-radius: 0;
+        overflow: hidden;
+        background: #d9d2c7;
+        width: 100%;
+    }
+    .site-hover-tile__media {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        transform: scale(1.02);
+        transition: transform 0.35s ease;
+    }
+    .site-hover-tile__pointer-glow {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(30, 77, 107, 0.02) 0%, rgba(30, 77, 107, 0.18) 42%, rgba(23, 53, 47, 0.42) 100%);
+        opacity: 0;
+        transition: opacity 0.32s ease;
+        z-index: 1;
+        pointer-events: none;
+    }
+    .site-hover-tile__overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 0.8rem;
+        padding: 1.4rem;
+        color: #fff;
+        background: linear-gradient(180deg, rgba(19, 33, 30, 0.08) 0%, rgba(19, 33, 30, 0.28) 45%, rgba(19, 33, 30, 0.82) 100%);
+    }
+    .site-hover-tile__overlay h3,
+    .site-hover-tile__overlay p,
+    .site-hover-tile__footer strong {
+        color: #fff;
+    }
+    .site-hover-tile__overlay p {
+        max-width: 22rem;
+    }
+    .site-hover-tile__footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+    }
+    .site-hover-tile__footer strong {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: 1.4rem;
+        line-height: 1;
+    }
+    .site-hover-tile:hover .site-hover-tile__media {
+        transform: scale(1.08);
+    }
+    .site-hover-tile:hover .site-hover-tile__pointer-glow {
+        opacity: 1;
+    }
+    .site-hover-tile--empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 20rem;
+    }
+    .site-slider-arrows {
+        display: flex;
+        justify-content: flex-start;
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+    .site-slider-arrows button {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 999px;
+        border: 1px solid rgba(23, 53, 47, 0.14);
+        background: rgba(255, 255, 255, 0.88);
+        color: #17352f;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    @media (max-width: 1199px) {
+        .site-home-split,
+        .site-home-hero__welcome-grid,
+        .site-home-stats,
+        .site-branch-card {
+            grid-template-columns: 1fr;
+        }
+        .site-home-split--branch-reverse .site-home-split__cards,
+        .site-home-split--branch-reverse .site-home-split__intro {
+            order: initial;
+        }
+        .site-home-split__intro {
+            position: static;
+        }
+        .site-home-rooms .site-home-split__intro {
+            max-width: none;
+        }
+        .site-home-rooms .site-home-split {
+            grid-template-columns: 1fr;
+        }
+        .site-home-rooms .site-home-split__cards {
+            padding-left: 0;
+        }
+    }
+    @media (max-width: 767px) {
+        .site-home-hero .hero__slider {
+            height: clamp(700px, 94vh, 860px) !important;
+        }
+        .site-home-hero__content {
+            padding-top: 5.4rem;
+        }
+        .site-home-hero__content .row {
+            transform: translateY(-1rem);
+        }
+        .site-home-intro,
+        .site-home-branches,
+        .site-home-rooms,
+        .site-home-services {
+            padding: 3.6rem 0;
+        }
+        .site-home-intro {
+            padding-top: 6.1rem;
+        }
+        .site-home-hero__title {
+            font-size: clamp(2.6rem, 11vw, 4rem);
+            max-width: min(100%, 13ch);
+        }
+        .site-home-hero__text {
+            font-size: 0.98rem;
+        }
+        .site-home-hero__welcome-card {
+            width: calc(100% - 1rem);
+            padding: 0.9rem;
+            margin-top: -3.4rem;
+        }
+        .site-home-hero__welcome-actions {
+            justify-items: start;
+            text-align: left;
+        }
+        .site-home-rooms .site-home-split {
+            gap: 1.35rem;
+        }
+        .site-home-rooms .site-home-split__intro h2 {
+            font-size: clamp(2rem, 10vw, 3rem);
+            line-height: 0.96;
+        }
+        .site-home-rooms .site-home-split__intro p {
+            font-size: 0.95rem;
+            line-height: 1.75;
+            max-width: none;
+        }
+        .site-home-rooms .site-home-split__cards,
+        .site-home-rooms .site-home-split__cards .js-section-slider,
+        .site-home-rooms .site-home-split__cards .swiper-wrapper,
+        .site-home-rooms .site-home-split__cards .swiper-slide {
+            width: 100%;
+        }
+        .site-hover-tile {
+            min-height: 22rem;
+        }
+        .site-hover-tile__footer,
+        .site-service-zigzag-card__meta {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .site-hover-tile__footer a {
+            width: 100%;
+        }
+        .site-branch-card__media {
+            min-height: 13rem;
+        }
+        .site-slider-arrows {
+            justify-content: flex-end;
+        }
+    }
+    @media (max-width: 575px) {
+        .site-home-rooms .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .site-home-rooms .site-home-split__cards {
+            overflow: visible;
+        }
+        .site-home-rooms .swiper-slide {
+            display: block;
+        }
+        .site-hover-tile__overlay {
+            padding: 1.1rem;
+        }
+        .site-hover-tile__overlay h3 {
+            font-size: 2rem;
+        }
+    }
+</style>
 @endsection

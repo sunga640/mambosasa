@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Reception;
 
+use App\Enums\BookingStatus;
+use App\Enums\MaintenanceStatus;
+use App\Enums\RoomStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reception\Concerns\InteractsWithStaffScope;
 use App\Http\Requests\Admin\StoreRoomRequest;
@@ -30,6 +33,8 @@ class ReceptionRoomController extends Controller
         $availableOnly = $request->boolean('available_only');
         $checkIn = $request->date('check_in');
         $checkOut = $request->date('check_out');
+        $statusFilter = $request->string('status')->toString() ?: 'all';
+        $search = trim($request->string('q')->toString());
 
         $query = Room::query()
             ->with([
@@ -54,13 +59,63 @@ class ReceptionRoomController extends Controller
             $query->where('hotel_branch_id', $request->integer('branch_id'));
         }
 
+        if ($search !== '') {
+            $query->where(function ($roomQuery) use ($search): void {
+                $roomQuery->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('room_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('branch', fn ($branchQuery) => $branchQuery->where('name', 'like', '%'.$search.'%'))
+                    ->orWhereHas('type', fn ($typeQuery) => $typeQuery->where('name', 'like', '%'.$search.'%'));
+            });
+        }
+
+        if ($statusFilter === 'available') {
+            $query->where('status', RoomStatus::Available)
+                ->where('force_in_use', false)
+                ->whereDoesntHave('maintenances', fn ($maintenanceQuery) => $maintenanceQuery->where('status', MaintenanceStatus::Active))
+                ->whereDoesntHave('bookings', function ($bookingQuery): void {
+                    $bookingQuery->whereIn('status', [BookingStatus::PendingPayment->value, BookingStatus::Confirmed->value])
+                        ->where(function ($rangeQuery): void {
+                            $rangeQuery->whereNull('check_in')
+                                ->orWhereNull('check_out')
+                                ->orWhereDate('check_out', '>', now()->toDateString());
+                        });
+                });
+        } elseif ($statusFilter === 'under_maintenance') {
+            $query->where(function ($roomQuery): void {
+                $roomQuery->where('status', RoomStatus::UnderMaintenance)
+                    ->orWhereHas('maintenances', fn ($maintenanceQuery) => $maintenanceQuery->where('status', MaintenanceStatus::Active));
+            });
+        } elseif ($statusFilter === 'occupied') {
+            $query->where(function ($roomQuery): void {
+                $roomQuery->where('force_in_use', true)
+                    ->orWhereHas('bookings', function ($bookingQuery): void {
+                        $bookingQuery->whereIn('status', [BookingStatus::PendingPayment->value, BookingStatus::Confirmed->value])
+                            ->where(function ($rangeQuery): void {
+                                $rangeQuery->whereNull('check_in')
+                                    ->orWhereNull('check_out')
+                                    ->orWhereDate('check_out', '>', now()->toDateString());
+                            });
+                    });
+            });
+        } elseif ($statusFilter === 'booked') {
+            $query->whereHas('bookings', function ($bookingQuery): void {
+                $bookingQuery->whereIn('status', [BookingStatus::PendingPayment->value, BookingStatus::Confirmed->value])
+                    ->where(function ($rangeQuery): void {
+                        $rangeQuery->whereNull('check_in')
+                            ->orWhereNull('check_out')
+                            ->orWhereDate('check_out', '>', now()->toDateString());
+                    });
+            });
+        }
+
         if ($availableOnly && $checkIn && $checkOut && $checkOut->gt($checkIn)) {
             $query->where('force_in_use', false)
                 ->whereDoesntHave('bookings', function ($bq) use ($checkIn, $checkOut): void {
-                    $bq->whereIn('status', [\App\Enums\BookingStatus::PendingPayment->value, \App\Enums\BookingStatus::Confirmed->value])
+                    $bq->whereIn('status', [BookingStatus::PendingPayment->value, BookingStatus::Confirmed->value])
                         ->whereDate('check_in', '<', $checkOut->toDateString())
                         ->whereDate('check_out', '>', $checkIn->toDateString());
-                });
+                })
+                ->whereDoesntHave('maintenances', fn ($maintenanceQuery) => $maintenanceQuery->where('status', MaintenanceStatus::Active));
         }
 
         $roomTypeQuery = RoomType::query()->where('is_active', true)->orderBy('name');
@@ -84,6 +139,8 @@ class ReceptionRoomController extends Controller
             'availableOnly' => $availableOnly,
             'filterCheckIn' => $request->input('check_in'),
             'filterCheckOut' => $request->input('check_out'),
+            'statusFilter' => $statusFilter,
+            'search' => $search,
         ]);
     }
 

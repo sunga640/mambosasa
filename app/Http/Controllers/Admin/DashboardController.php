@@ -22,6 +22,7 @@ class DashboardController extends Controller
 {
     public function __invoke(StaffScope $scope): View
     {
+        $branchIds = $scope->branchIdsOrAll();
         $bookingBase = Booking::query();
         $scope->filterBookingsByBranch($bookingBase);
 
@@ -122,8 +123,13 @@ class DashboardController extends Controller
                 ->sum('total_amount'), 2);
         }
 
-        $contactCount = ContactMessage::query()->count();
-        $recentContacts = ContactMessage::query()->latest()->limit(5)->get();
+        $contactCountQuery = ContactMessage::query();
+        $scope->filterContactMessagesByBranch($contactCountQuery);
+        $contactCount = $contactCountQuery->count();
+
+        $recentContactsQuery = ContactMessage::query()->with('branch')->latest();
+        $scope->filterContactMessagesByBranch($recentContactsQuery);
+        $recentContacts = $recentContactsQuery->limit(5)->get();
 
         $paymentByMethod = (clone $bookingBase)
             ->where('status', BookingStatus::Confirmed)
@@ -165,11 +171,15 @@ class DashboardController extends Controller
 
         $recentActivity = ActivityLog::query()
             ->with('user')
+            ->when($branchIds !== [], function ($query) use ($branchIds): void {
+                $query->whereHas('user', fn ($userQuery) => $userQuery->whereIn('hotel_branch_id', $branchIds));
+            })
             ->latest()
             ->limit(18)
             ->get();
 
         $expenseRows = RoomMaintenance::query()
+            ->whereHas('room', fn ($roomQuery) => $roomQuery->whereIn('hotel_branch_id', $branchIds))
             ->whereDate('started_at', '>=', now()->subDays(30)->toDateString())
             ->selectRaw('DATE(started_at) as d, SUM(COALESCE(expenses,0)) as total')
             ->groupBy(DB::raw('DATE(started_at)'))
@@ -181,6 +191,7 @@ class DashboardController extends Controller
         $expenseMap = $expenseRows->pluck('total', 'd');
         $expenseSeries = $expenseLabels->map(fn ($d) => round((float) ($expenseMap[$d] ?? 0), 2))->values();
         $expensesMonthTotal = (float) RoomMaintenance::query()
+            ->whereHas('room', fn ($roomQuery) => $roomQuery->whereIn('hotel_branch_id', $branchIds))
             ->whereMonth('started_at', now()->month)
             ->whereYear('started_at', now()->year)
             ->sum('expenses');
@@ -225,7 +236,7 @@ class DashboardController extends Controller
                 'bookings_confirmed' => $byStatus[BookingStatus::Confirmed->value] ?? 0,
                 'rooms' => $roomQ->count(),
                 'branches' => HotelBranch::query()->count(),
-                'users' => User::query()->count(),
+                'users' => tap(User::query(), fn ($userQuery) => $scope->filterUsersByBranch($userQuery))->count(),
                 'contact_messages' => $contactCount,
                 'revenue_confirmed' => $confirmedRevenue,
                 'revenue_pending' => $pendingRevenue,

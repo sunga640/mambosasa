@@ -15,6 +15,7 @@
     <table class="admin-table mt-20">
         <thead>
             <tr>
+                <th>{{ __('Image') }}</th>
                 <th>{{ __('Name') }}</th>
                 <th>{{ __('Category') }}</th>
                 <th>{{ __('Branch') }}</th>
@@ -26,6 +27,13 @@
         <tbody>
             @forelse ($services as $row)
                 <tr>
+                    <td>
+                        @if ($row->imageUrl())
+                            <img src="{{ $row->imageUrl() }}" alt="{{ $row->name }}" style="width:72px;height:52px;object-fit:cover;border-radius:0;border:1px solid #e5e7eb;">
+                        @else
+                            <span class="text-12" style="opacity:.6;">{{ __('No image') }}</span>
+                        @endif
+                    </td>
                     <td><strong>{{ $row->name }}</strong></td>
                     <td>{{ $row->category }}</td>
                     <td>{{ $row->branch?->name ?? __('All') }}</td>
@@ -41,7 +49,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6">{{ __('No services yet.') }}</td></tr>
+                <tr><td colspan="7">{{ __('No services yet.') }}</td></tr>
             @endforelse
         </tbody>
     </table>

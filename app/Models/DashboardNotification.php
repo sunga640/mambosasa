@@ -10,6 +10,7 @@ class DashboardNotification extends Model
     protected $fillable = [
         'booking_id',
         'room_id',
+        'recipient_user_id',
         'kind',
         'title',
         'body',
@@ -35,6 +36,11 @@ class DashboardNotification extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
+    }
+
+    public function recipientUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'recipient_user_id');
     }
 
     public function markRead(): void

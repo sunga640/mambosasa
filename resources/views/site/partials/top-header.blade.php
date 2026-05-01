@@ -1,179 +1,399 @@
 @php
     $loginUrl = auth()->check() ? auth()->user()->accountHomeUrl() : route('login');
     $siteHomeUrl = auth()->check() ? auth()->user()->accountHomeUrl() : route('site.home');
-    $telHref = $siteSettings->phone ? 'tel:'.preg_replace('/\s+/', '', $siteSettings->phone) : '#';
+    $brandLines = $siteSettings->headerBrandLines();
+    $primaryBrand = $brandLines[0] ?? $siteSettings->hotelDisplayName();
+    $secondaryBrand = $brandLines[1] ?? __('Guest reservations');
+    $guestNavItems = [
+        ['label' => __('Home'), 'url' => $siteHomeUrl],
+        ['label' => __('Travel Guides'), 'url' => route('site.page', ['slug' => 'about'])],
+        ['label' => __('Contact'), 'url' => route('site.page', ['slug' => 'contact'])],
+    ];
 @endphp
 
-<!-- HEADER START -->
-<header class="header -h-90 bg-white js-header site-header-stack">
-    {{-- Top Bar (Desktop Only) --}}
-    <div class="d-flex items-center bg-light-1 h-40 md:d-none w-full border-bottom-light">
+<header class="header bg-white js-header site-header-stack site-guest-header {{ request()->routeIs('site.home') ? 'site-guest-header--overlay' : '' }}">
+    <div class="site-guest-header__top">
         <div class="container">
-            <div class="row justify-between">
-                <div class="col-auto">
-                    @if ($siteSettings->address_line)
-                        <span class="text-13 opacity-70"><i class="icon-map mr-10"></i>{{ $siteSettings->address_line }}</span>
+            <div class="site-guest-header__topbar">
+                <a href="{{ $siteHomeUrl }}" class="site-guest-header__identity">
+                    @if ($dashboardSettings->headerLogoUrl())
+                        <img src="{{ $dashboardSettings->headerLogoUrl() }}" alt="{{ $siteSettings->hotelDisplayName() }}">
                     @endif
-                </div>
-                <div class="col-auto d-flex">
-                    @if ($siteSettings->phone) <a href="{{ $telHref }}" class="text-13 mr-20"><i class="icon-phone mr-10"></i>{{ $siteSettings->phone }}</a> @endif
-                    @if ($siteSettings->email) <a href="mailto:{{ $siteSettings->email }}" class="text-13"><i class="icon-email mr-10"></i>{{ $siteSettings->email }}</a> @endif
+                    <span>
+                        <strong>{{ $primaryBrand }}</strong>
+                        <small>{{ $secondaryBrand }}</small>
+                    </span>
+                </a>
+
+                <nav class="site-guest-header__desktop-nav">
+                    @foreach($guestNavItems as $item)
+                        <a href="{{ $item['url'] }}">{{ $item['label'] }}</a>
+                    @endforeach
+                </nav>
+
+                <div class="site-guest-header__actions">
+                    @if($siteSettings->phone)
+                        <a href="tel:{{ preg_replace('/\s+/', '', $siteSettings->phone) }}" class="site-guest-header__phone">
+                            <i class="icon-phone text-14"></i>
+                            <span>{{ $siteSettings->phone }}</span>
+                        </a>
+                    @endif
+                    <a href="{{ $loginUrl }}" class="site-guest-header__account">{{ __('Admin') }}</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="header__container container">
-        {{-- LEFT SIDE --}}
-        <div class="d-flex items-center" style="flex: 1; gap: 12px;">
-            <a href="{{ route('site.search') }}" class="header-circle-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </a>
-
-            {{-- Button ya kufungua Menu ya Simu --}}
-            <button type="button" onclick="toggleMobileMenu()" class="hamburg-mobile-btn">
-                <i class="icon-menu text-15"></i>
-            </button>
-
-            {{-- Links za Desktop pekee --}}
-            <nav class="desktop-nav-links">
-                <a href="{{ $siteHomeUrl }}">Home</a>
-                <a href="{{ route('site.page', ['slug' => 'about']) }}">About</a>
-                <a href="{{ route('site.page', ['slug' => 'contact']) }}">Contact</a>
-
-            </nav>
-        </div>
-
-       <div class="header__center">
-    <a href="{{ $siteHomeUrl }}" class="header-logo-wrap">
-        @if ($dashboardSettings->headerLogoUrl())
-            <img src="{{ $dashboardSettings->headerLogoUrl() }}" alt="Logo">
-        @endif
-        <span>{{ $siteSettings->company_name ?? 'Mambo Sasa Hotel' }}</span>
-    </a>
-</div>
-
-        {{-- RIGHT SIDE --}}
-        <div class="d-flex justify-end items-center" style="flex: 1; gap: 10px;">
-            <a href="{{ $loginUrl }}" class="header-circle-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            </a>
+    <div class="site-guest-header__mobile">
+        <div class="container">
+            <div class="site-guest-header__mobile-row">
+                <button type="button" onclick="toggleMobileMenu()" class="site-guest-header__mobile-btn" aria-label="{{ __('Open menu') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.2"/>
+                    </svg>
+                </button>
+                <a href="{{ $siteHomeUrl }}" class="site-guest-header__mobile-brand">
+                    @if ($dashboardSettings->headerLogoUrl())
+                        <img src="{{ $dashboardSettings->headerLogoUrl() }}" alt="{{ $siteSettings->hotelDisplayName() }}">
+                    @endif
+                    <span>{{ $primaryBrand }}</span>
+                </a>
+                <a href="{{ $loginUrl }}" class="site-guest-header__mobile-btn" aria-label="{{ __('Admin login') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path d="M4 20a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+                    </svg>
+                </a>
+            </div>
         </div>
     </div>
 </header>
 
-<!-- MOBILE SIDE DRAWER MENU -->
-<div id="mobileDrawer" class="mobile-side-drawer">
-    <div class="drawer-header">
-        <span class="drawer-title">MENU</span>
-        <button onclick="toggleMobileMenu()" class="drawer-close-btn">&times;</button>
-    </div>
-    <div class="drawer-body">
-        <nav class="mobile-nav-list">
-            <a href="{{ $siteHomeUrl }}"><i class="icon-home mr-10"></i> Home</a>
-            <a href="{{ route('site.page', ['slug' => 'about']) }}"><i class="icon-notification mr-10"></i> About Us</a>
-            <a href="{{ route('site.page', ['slug' => 'contact']) }}"><i class="icon-newsletter mr-10"></i> Contact</a>
-            <a href="{{ route('site.page', ['slug' => 'faq']) }}"><i class="icon-clock mr-10"></i> FAQ</a>
-            <a href="{{ route('site.page', ['slug' => 'terms']) }}"><i class="icon-clock mr-10"></i> Terms & Conditions</a>
-
+<div id="mobileDrawer" class="site-guest-drawer">
+    <div class="site-guest-drawer__panel">
+        <div class="site-guest-drawer__head">
+            <span>{{ $siteSettings->hotelDisplayName() }}</span>
+            <button onclick="toggleMobileMenu()" class="site-guest-drawer__close" aria-label="{{ __('Close menu') }}">&times;</button>
+        </div>
+        <nav class="site-guest-drawer__links">
+            @foreach($guestNavItems as $item)
+                <a href="{{ $item['url'] }}">{{ $item['label'] }}</a>
+            @endforeach
+            <a href="{{ route('site.page', ['slug' => 'faq']) }}">{{ __('FAQ') }}</a>
+            <a href="{{ $loginUrl }}">{{ __('Admin') }}</a>
         </nav>
     </div>
 </div>
-<!-- Overlay background inatokea menu ikifunguka -->
-<div id="drawerOverlay" class="drawer-overlay" onclick="toggleMobileMenu()"></div>
+<div id="drawerOverlay" class="site-guest-drawer__overlay" onclick="toggleMobileMenu()"></div>
 
 <style>
-    /* 1. Header & Desktop Links */
-    .header-circle-icon {
-        display: flex; align-items: center; justify-content: center;
-        width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); color: #122223;
+    .site-guest-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 10040;
+        background: #ffffff;
+        box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
     }
-    .hamburg-mobile-btn {
-        display: none; align-items: center; justify-content: center;
-        width: 38px; height: 38px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; background: #fff; cursor: pointer;
+    .site-guest-header.is-sticky,
+    .site-guest-header.is-sticky.header,
+    .site-guest-header.is-sticky.bg-white {
+        background: #000000 !important;
+        box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22) !important;
     }
-    .desktop-nav-links { display: flex; align-items: center; gap: 20px; }
-    .desktop-nav-links a { font-size: 13px; font-weight: 600; text-transform: uppercase; color: #122223 !important; text-decoration: none; }
-
-    /* 2. Side Drawer (The Menu) */
-    .mobile-side-drawer {
-        position: fixed; top: 0; left: -300px; /* Hidden by default */
-        width: 280px; height: 100%; background: #122223; /* Dark Professional Background */
-        z-index: 10000; transition: 0.4s ease;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.3);
-        display: flex; flex-direction: column;
+    .site-guest-header.site-guest-header--overlay,
+    .site-guest-header.site-guest-header--overlay.header,
+    .site-guest-header.site-guest-header--overlay.bg-white {
+        background: transparent !important;
+        box-shadow: none !important;
     }
-    .mobile-side-drawer.active { left: 0; } /* Show when active */
-
-    .drawer-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .drawer-title { color: #fff; font-weight: 700; letter-spacing: 2px; }
-    .drawer-close-btn { background: none; border: none; color: #fff; font-size: 30px; cursor: pointer; }
-
-    .drawer-body { padding: 20px; }
-    .mobile-nav-list a {
-        display: block; color: #fff !important; font-size: 16px; font-weight: 500;
-        padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); text-decoration: none;
+    .site-guest-header__top {
+        background: #ffffff;
+        border-bottom: 1px solid rgba(23, 53, 47, 0.1);
     }
-    .drawer-login-btn { background: #fff; color: #122223 !important; text-align: center; border-radius: 8px; margin-top: 10px; font-weight: 700 !important; }
-
-    /* 3. Overlay */
-    .drawer-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); z-index: 9999; display: none;
+    .site-guest-header.is-sticky .site-guest-header__top {
+        background: #000000 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
-    .drawer-overlay.active { display: block; }
-
-    /* 4. Logo Positioning */
-    .header__center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-    .header-logo-wrap { display: flex; flex-direction: column; align-items: center; text-decoration: none; }
-    .header-logo-wrap img { max-height: 25px; }
-    .header-logo-wrap span { font-weight: 700; font-size: 0.95rem; color: #122223; white-space: nowrap; }
-
-    /* Responsive */
+    .site-guest-header--overlay .site-guest-header__top {
+        background: linear-gradient(180deg, rgba(9, 21, 24, 0.26) 0%, rgba(9, 21, 24, 0.08) 72%, rgba(9, 21, 24, 0) 100%) !important;
+        border-bottom: none !important;
+    }
+    .site-guest-header__topbar {
+        min-height: 7rem;
+        display: grid;
+        grid-template-columns: minmax(250px, 1fr) auto auto;
+        gap: 1.4rem;
+        align-items: center;
+    }
+    .site-guest-header__identity {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.9rem;
+        text-decoration: none;
+        color: #17352f;
+    }
+    .site-guest-header__identity img {
+        width: auto;
+        max-height: 3.75rem;
+        object-fit: contain;
+        flex-shrink: 0;
+        border-radius: 0.65rem;
+    }
+    .site-guest-header__identity strong {
+        display: block;
+        font-size: 1.06rem;
+        font-weight: 600;
+        line-height: 1.1;
+        color: #17352f;
+    }
+    .site-guest-header__identity small {
+        display: block;
+        margin-top: 0.3rem;
+        color: #64748b;
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+    }
+    .site-guest-header__desktop-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+    }
+    .site-guest-header__desktop-nav a,
+    .site-guest-header__account {
+        color: #17352f;
+        text-decoration: none;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .site-guest-header.is-sticky .site-guest-header__identity,
+    .site-guest-header.is-sticky .site-guest-header__desktop-nav a,
+    .site-guest-header.is-sticky .site-guest-header__account,
+    .site-guest-header.is-sticky .site-guest-header__phone,
+    .site-guest-header.is-sticky .site-guest-header__identity strong,
+    .site-guest-header.is-sticky .site-guest-header__identity small {
+        color: #ffffff !important;
+    }
+    .site-guest-header--overlay .site-guest-header__identity,
+    .site-guest-header--overlay .site-guest-header__desktop-nav a,
+    .site-guest-header--overlay .site-guest-header__account,
+    .site-guest-header--overlay .site-guest-header__phone,
+    .site-guest-header--overlay .site-guest-header__identity strong,
+    .site-guest-header--overlay .site-guest-header__identity small {
+        color: #ffffff;
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.26);
+    }
+    .site-guest-header--overlay .site-guest-header__identity small {
+        opacity: 0.82;
+    }
+    .site-guest-header__actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+    .site-guest-header__phone {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: #1e3a8a;
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+    .site-guest-header__account {
+        padding: 0.85rem 1rem;
+        background: #ffffff;
+        border: 1px solid rgba(23, 53, 47, 0.14);
+    }
+    .site-guest-header.is-sticky .site-guest-header__account {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.18) !important;
+    }
+    .site-guest-header--overlay .site-guest-header__account {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.24);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    .site-guest-header__mobile {
+        display: none;
+    }
+    .site-guest-drawer {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(19rem, 86vw);
+        transform: translateX(-104%);
+        transition: transform 0.28s ease;
+        z-index: 10060;
+    }
+    .site-guest-drawer.active { transform: translateX(0); }
+    .site-guest-drawer__panel {
+        height: 100%;
+        background: linear-gradient(180deg, #1f2028 0%, #17352f 100%);
+        color: #fff;
+        padding: 1.35rem;
+        box-shadow: 16px 0 48px rgba(0, 0, 0, 0.28);
+    }
+    .site-guest-drawer__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: 1.25rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        padding-bottom: 0.9rem;
+        margin-bottom: 0.9rem;
+    }
+    .site-guest-drawer__close {
+        border: none;
+        background: transparent;
+        color: #fff;
+        font-size: 1.8rem;
+        cursor: pointer;
+    }
+    .site-guest-drawer__links {
+        display: grid;
+        gap: 0.2rem;
+    }
+    .site-guest-drawer__links a {
+        color: rgba(255, 255, 255, 0.94);
+        text-decoration: none;
+        padding: 0.9rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 0.84rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+    .site-guest-drawer__overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(7, 17, 20, 0.48);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.28s ease, visibility 0.28s ease;
+        z-index: 10055;
+    }
+    .site-guest-drawer__overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .site-guest-header__mobile-row {
+        min-height: 5.25rem;
+        display: grid;
+        grid-template-columns: 3.35rem 1fr 3.35rem;
+        gap: 0.8rem;
+        align-items: center;
+    }
+    .site-guest-header__mobile-brand {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        text-decoration: none;
+        color: #17352f;
+        min-width: 0;
+    }
+    .site-guest-header__mobile-brand img {
+        max-height: 2.7rem;
+        width: auto;
+        object-fit: contain;
+        border-radius: 0.55rem;
+    }
+    .site-guest-header__mobile-brand span {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: clamp(0.98rem, 4vw, 1.24rem);
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .site-guest-header__mobile-btn {
+        width: 3.1rem;
+        height: 3.1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(30, 58, 138, 0.24);
+        background: #173b74;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        box-shadow: 0 10px 24px rgba(23, 59, 116, 0.18);
+        font-size: 1.15rem;
+    }
+    .site-guest-header__mobile-btn i {
+        font-size: 1.15rem !important;
+        line-height: 1;
+    }
+    .site-guest-header__mobile-btn svg {
+        width: 1.32rem;
+        height: 1.32rem;
+        display: block;
+    }
     @media (max-width: 1023px) {
-        .desktop-nav-links { display: none !important; }
-        .hamburg-mobile-btn { display: flex !important; }
+        .site-guest-header__top {
+            display: none;
+        }
+        .site-guest-header__mobile {
+            display: block;
+            background: #fff;
+        }
+        .site-guest-header.is-sticky .site-guest-header__mobile {
+            background: #000000 !important;
+        }
+        .site-guest-header--overlay .site-guest-header__mobile {
+            background: linear-gradient(180deg, rgba(9, 21, 24, 0.34) 0%, rgba(9, 21, 24, 0.12) 72%, rgba(9, 21, 24, 0) 100%) !important;
+        }
+        .site-guest-header__mobile-brand {
+            justify-content: flex-start;
+        }
+        .site-guest-header--overlay .site-guest-header__mobile-brand,
+        .site-guest-header--overlay .site-guest-header__mobile-brand span {
+            color: #fff;
+        }
+        .site-guest-header--overlay .site-guest-header__mobile-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.22);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+        }
+        .site-guest-header.is-sticky .site-guest-header__mobile-btn,
+        .site-guest-header.is-sticky .site-guest-header__mobile-brand,
+        .site-guest-header.is-sticky .site-guest-header__mobile-brand span {
+            color: #ffffff !important;
+        }
+        .site-guest-header.is-sticky .site-guest-header__mobile-btn {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24) !important;
+        }
     }
-    /* Muonekano wa Logo na Jina la Hoteli */
-.header-logo-wrap {
-    display: flex;
-    align-items: center;
-    gap: 12px; /* Nafasi kati ya picha ya logo na maandishi */
-    text-decoration: none;
-    color: #111; /* Rangi ya herufi */
-    transition: opacity 0.2s;
-}
-
-.header-logo-wrap:hover {
-    opacity: 0.8;
-}
-
-/* Hapa ndipo tunakuza maandishi na kuweka font */
-.header-logo-wrap span {
-    font-family: 'Cormorant Garamond', serif; /* Font uliyotaka */
-    font-size: 28px; /* Ukubwa wa maandishi (unaweza kuongeza hapa) */
-    font-weight: 600; /* Unene wa maandishi */
-    line-height: 1.2;
-    letter-spacing: 0.02em; /* Nafasi kidogo kati ya herufi ili iwe classic */
-    white-space: nowrap; /* Kuzuia jina lisiende mstari wa pili */
-}
-
-/* Ukubwa wa picha ya logo (kama ipo) */
-.header-logo-wrap img {
-    max-height: 45px; /* Inarekebisha picha iendane na maandishi makubwa */
-    width: auto;
-    object-fit: contain;
-}
-
-/* Kurekebisha kwenye simu (Mobile) ili jina lisizidi kioo */
-@media (max-width: 600px) {
-    .header-logo-wrap span {
-        font-size: 20px; /* Ukubwa unapungua kidogo kwenye simu */
+    @media (max-width: 575px) {
+        .site-guest-header__mobile-row {
+            min-height: 5rem;
+            grid-template-columns: 3.2rem minmax(0, 1fr) 3.2rem;
+            gap: 0.55rem;
+        }
+        .site-guest-header__mobile-brand img {
+            max-height: 2.5rem;
+        }
+        .site-guest-header__mobile-brand span {
+            font-size: clamp(0.9rem, 3.9vw, 1.08rem);
+        }
+        .site-guest-header__mobile-btn {
+            width: 3rem;
+            height: 3rem;
+        }
     }
-    .header-logo-wrap img {
-        max-height: 35px;
-    }
-}
 </style>
 
 <script>
@@ -182,12 +402,6 @@
         const overlay = document.getElementById('drawerOverlay');
         drawer.classList.toggle('active');
         overlay.classList.toggle('active');
-
-        // Zuia kuscroll huku menu ipo wazi
-        if (drawer.classList.contains('active')) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
+        document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : 'auto';
     }
 </script>

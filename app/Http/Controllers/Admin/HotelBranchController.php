@@ -27,7 +27,7 @@ class HotelBranchController extends Controller
     public function create(): View
     {
         return view('admin.branches.create', [
-            'mediaAssets' => MediaAsset::query()->latest()->limit(100)->get(),
+            'mediaAssets' => MediaAsset::query()->latest()->get(),
         ]);
     }
 
@@ -56,7 +56,7 @@ class HotelBranchController extends Controller
     {
         return view('admin.branches.edit', [
             'branch' => $branch,
-            'mediaAssets' => MediaAsset::query()->latest()->limit(100)->get(),
+            'mediaAssets' => MediaAsset::query()->latest()->get(),
         ]);
     }
 

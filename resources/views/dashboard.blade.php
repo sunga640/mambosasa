@@ -2,20 +2,22 @@
 
 @php
     use App\Enums\BookingStatus;
+    use App\Enums\RoomServiceOrderStatus;
     $user = auth()->user();
 
     // 1. Kusafisha Role (Kuzuia JSON Display)
     $roleRaw = $user->role;
     $roleName = strtolower(is_string($roleRaw) ? $roleRaw : ($roleRaw->name ?? 'guest'));
 
-    // 2. Logic za Mamlaka
-    $isAdmin = in_array($roleName, ['admin', 'director']);
-    $isManagement = in_array($roleName, ['admin', 'manager', 'director']);
-    $isMaintenance = in_array($roleName, ['maintenance', 'maintainance', 'housekeeping']);
-    $isReception = in_array($roleName, ['receptionist', 'manager', 'admin']);
-
-    // Ni Guest tu kama hana role ya ki-staff
-    $isGuest = in_array($roleName, ['guest', 'customer', 'member']) || (!$isAdmin && !$isMaintenance && !$isReception);
+    $canManageBookings = $user->hasPermission('manage-bookings');
+    $canManageCustomers = $user->hasPermission('manage-customers');
+    $canManageMaintenance = $user->hasPermission('manage-maintenance');
+    $canViewReports = $user->hasAnyPermission(['view-reception-reports', 'view-reports', 'view-dashboard-analytics']);
+    $canManageUsers = $user->hasAnyPermission(['manage-users', 'manage-staff-users']);
+    $canManageSettings = $user->hasPermission('manage-system-settings');
+    $canOpenReception = $user->hasStaffPanelAccess();
+    $canOpenAdmin = $user->hasAdminPanelAccess();
+    $isGuest = ! ($canManageBookings || $canManageCustomers || $canManageMaintenance || $canViewReports || $canManageUsers || $canManageSettings || $canOpenReception || $canOpenAdmin);
 @endphp
 
 @section('title', __('Dashboard'))
@@ -25,9 +27,16 @@
         .dash-content-card .dash-btn, .dash-content-card .button, .dash-content-card button {
             padding: .35rem .7rem !important; font-size: .84rem !important; font-weight: 500 !important; border-width: 1px !important;
         }
-        .stat-card-work { padding:1.25rem; border-radius:12px; border:1px solid #e2e8f0; background:#fff; transition: 0.3s; }
+        .stat-card-work { padding:1.1rem; border-radius:0; border:1px solid rgba(213,172,66,.16); background:linear-gradient(135deg, rgba(17,24,39,.88), rgba(51,65,85,.92)); transition: 0.3s; }
         .work-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
-        .work-value { font-size: 24px; font-weight: 700; margin-top: 5px; color: #0f172a; }
+        .work-value { font-size: 22px; font-weight: 700; margin-top: 5px; color: #ffffff; }
+        .guest-surface-card { background:linear-gradient(135deg, rgba(15,23,42,.92), rgba(51,65,85,.95)) !important; border:1px solid rgba(213,172,66,.16) !important; color:#e5e7eb; }
+        .guest-surface-card .dash-table-styled { color:#e5e7eb; }
+        .guest-surface-card .dash-table-styled__head { background:rgba(30,41,59,.78); color:#f8fafc; }
+        .guest-surface-card .dash-table-styled__row { background:transparent; }
+        .guest-surface-card .dash-table-styled td,
+        .guest-surface-card .dash-table-styled th { background: transparent !important; color: inherit; }
+        .guest-surface-card .badge { background:rgba(34,197,94,.14); color:#dcfce7; border:1px solid rgba(34,197,94,.24); }
     </style>
 
     {{-- 1. HERO SECTION (Dynamic based on Role) --}}
@@ -37,7 +46,7 @@
             ? $dashboardSettings->resolvedHomeHeroFirstSlide()
             : $dashboardSettings->resolvedInnerPageHero($memberHeroFallback);
     @endphp
-    <div class="member-dash-hero" style="margin:-1.5rem -1.75rem 1.25rem; border-radius:12px 12px 0 0; min-height:148px; background:#1a1a1a url('{{ $memberHeroBg }}') center/cover no-repeat; position:relative; overflow:hidden;">
+    <div class="member-dash-hero" style="margin:-1.5rem -1.75rem 1.25rem; border-radius:0; min-height:148px; background:#1a1a1a url('{{ $memberHeroBg }}') center/cover no-repeat; position:relative; overflow:hidden;">
         <div style="position:absolute; inset:0; background:linear-gradient(90deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.4) 100%);"></div>
         <div style="position:relative; padding:1.5rem 1.75rem 1.35rem; color:#fff;">
             {{-- Badge ya Role --}}
@@ -56,9 +65,13 @@
             <div class="d-flex gap-10 mt-14">
                 {{-- Vitendo vya Staff --}}
                 @if(!$isGuest)
-                    <a href="{{ route('admin.dashboard') }}" class="dash-btn" style="background:#2563eb; color:#fff; border:none; font-weight:600;">{{ __('Admin Panel') }}</a>
-                    @if($isMaintenance)
-                        <a href="{{ route('admin.maintenance.index') }}" class="dash-btn" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid #fff;">{{ __('Tasks List') }}</a>
+                    @if($canOpenAdmin)
+                        <a href="{{ route('admin.dashboard') }}" class="dash-btn" style="background:#2563eb; color:#fff; border:none; font-weight:600;">{{ __('Admin Panel') }}</a>
+                    @elseif($canOpenReception)
+                        <a href="{{ route('reception.dashboard') }}" class="dash-btn" style="background:#2563eb; color:#fff; border:none; font-weight:600;">{{ __('Staff Dashboard') }}</a>
+                    @endif
+                    @if($canManageMaintenance)
+                        <a href="{{ $canOpenAdmin ? route('admin.maintenance.index') : route('reception.maintenance.index') }}" class="dash-btn" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid #fff;">{{ __('Tasks List') }}</a>
                     @endif
                 @endif
 
@@ -71,10 +84,10 @@
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem; margin-bottom:2rem;">
 
         {{-- KADI ZA MANAGEMENT (Admin/Manager Tu) --}}
-        @if($isManagement)
+        @if($canViewReports || $canOpenAdmin)
             <div class="stat-card-work" style="border-left:4px solid #2563eb;">
                 <div class="work-label">{{ __('Monthly Revenue') }}</div>
-                <div class="work-value">TZS {{ number_format($memberStats['total_revenue_month'] ?? 0) }}</div>
+                <div class="work-value">TZS {{ number_format($memberStats['total_spend_confirmed'] ?? 0) }}</div>
             </div>
             <div class="stat-card-work" style="border-left:4px solid #16a34a;">
                 <div class="work-label">{{ __('Confirmed Bookings') }}</div>
@@ -83,7 +96,7 @@
         @endif
 
         {{-- KADI ZA MAINTENANCE (Maintenance Staff Tu) --}}
-        @if($isMaintenance)
+        @if($canManageMaintenance)
             <div class="stat-card-work" style="border-left:4px solid #ea580c;">
                 <div class="work-label">{{ __('Pending Repairs') }}</div>
                 <div class="work-value">--</div> {{-- Hapa unaweza kuweka count ya maintenance --}}
@@ -100,14 +113,20 @@
                 <div class="work-label">{{ __('My Total Spend') }}</div>
                 <div class="work-value">{{ number_format($memberStats['total_spend_confirmed'] ?? 0, 0) }}</div>
             </div>
-            <div class="stat-card-work" style="background:#f0fdf4;">
+            <div class="stat-card-work" style="background:linear-gradient(135deg, rgba(15,23,42,.92), rgba(6,95,70,.92));">
                 <div class="work-label">{{ __('My Confirmed Stays') }}</div>
                 <div class="work-value">{{ number_format($memberStats['bookings_confirmed'] ?? 0) }}</div>
             </div>
-            <div class="stat-card-work" style="background:#fffbeb;">
+            <div class="stat-card-work" style="background:linear-gradient(135deg, rgba(15,23,42,.92), rgba(120,53,15,.92));">
                 <div class="work-label">{{ __('Awaiting Payment') }}</div>
                 <div class="work-value text-orange-1">{{ number_format($memberStats['bookings_pending'] ?? 0) }}</div>
             </div>
+            @if($dashboardSettings->restaurantIntegrationConfigured())
+                <div class="stat-card-work" style="border-left:4px solid #0f766e;">
+                    <div class="work-label">{{ __('Restaurant Orders') }}</div>
+                    <div class="work-value">{{ __('Live') }}</div>
+                </div>
+            @endif
         @endif
 
     </div>
@@ -122,10 +141,10 @@
     @if($isGuest)
         {{-- Payment Action Needed --}}
         @if ($pendingBookings->isNotEmpty())
-            <div style="padding:1.5rem; background:#fffbeb; border:1px solid #fde68a; border-radius:12px; margin-bottom:2rem;">
+            <div style="padding:1.5rem; background:#fffbeb; border:1px solid #fde68a; border-radius:0; margin-bottom:2rem;">
                 <h2 class="text-18 fw-700 mb-10" style="color:#92400e;">⚠️ {{ __('Action Required: Pending Payment') }}</h2>
                 @foreach ($pendingBookings as $b)
-                    <div class="d-flex justify-between items-center bg-white p-15 rounded-8 mb-10 border-light">
+                    <div class="d-flex justify-between items-center bg-white p-15 mb-10 border-light" style="border-radius:0;">
                         <div>
                             <div class="fw-700">{{ $b->public_reference }}</div>
                             <div class="text-12 opacity-60">{{ $b->room->name }}</div>
@@ -137,8 +156,17 @@
             </div>
         @endif
 
-        <div class="content-box p-25 bg-white rounded-12 shadow-sm border-light">
+        <div class="content-box p-25 shadow-sm border-light guest-surface-card" style="border-radius:0;">
             <h2 class="text-20 fw-700 mb-20">{{ __('Your Stay History') }}</h2>
+            @if($dashboardSettings->restaurantIntegrationConfigured())
+                <div class="mb-20" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:1rem;border:1px solid #d1fae5;background:#ecfdf5;">
+                    <div>
+                        <div class="text-12" style="font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0f766e;">{{ __('Restaurant Integration') }}</div>
+                        <p class="text-14 mt-5 mb-0" style="opacity:.8;">{{ __('Open the connected restaurant system with your active stay so guests can place food orders securely.') }}</p>
+                    </div>
+                    <a href="{{ route('member.restaurant.launch') }}" class="dash-btn dash-btn--primary">{{ __('Open Restaurant Ordering') }}</a>
+                </div>
+            @endif
             @if ($recentBookings->isEmpty())
                 <p class="text-14 opacity-50">{{ __('No bookings found.') }}</p>
             @else
@@ -156,27 +184,81 @@
                 </table>
             @endif
         </div>
+
+        @if (!empty($recentRoomServiceOrders) && count($recentRoomServiceOrders))
+            <div class="content-box p-25 shadow-sm border-light mt-25 guest-surface-card" style="border-radius:0;">
+                <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center;">
+                    <div>
+                        <h2 class="text-20 fw-700 mb-5">{{ __('Your food orders') }}</h2>
+                        <p class="text-14 opacity-60" style="margin:0;">{{ __('See which room the order belongs to, the kitchen stage, and the estimated delivery time.') }}</p>
+                    </div>
+                    <a href="{{ route('member.room-service.index') }}" class="dash-btn dash-btn--primary">{{ __('Open full food orders') }}</a>
+                </div>
+                <div class="mt-20" style="display:grid;gap:1rem;">
+                    @foreach ($recentRoomServiceOrders as $order)
+                        <article style="padding:1rem;border:1px solid rgba(213,172,66,.18);background:rgba(255,255,255,.04);">
+                            <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start;">
+                                <div>
+                                    <div class="fw-700">{{ $order->room?->name ?? __('Room order') }}</div>
+                                    <div class="text-13 opacity-60">{{ __('Order source') }}: {{ strtoupper((string) $order->request_source) }}</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div class="text-12 opacity-60">{{ __('Estimated delivery') }}</div>
+                                    <div class="fw-700">{{ $order->estimated_ready_at?->format('H:i') ?? '—' }}</div>
+                                </div>
+                            </div>
+                            <div class="mt-12" style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center;">
+                                <span class="badge">
+                                    {{ match((string) $order->status) {
+                                        RoomServiceOrderStatus::Pending->value => __('Pending'),
+                                        RoomServiceOrderStatus::Preparing->value => __('Preparing'),
+                                        RoomServiceOrderStatus::Delivered->value => __('Delivered'),
+                                        RoomServiceOrderStatus::Cancelled->value => __('Cancelled'),
+                                        default => ucfirst((string) $order->status),
+                                    } }}
+                                </span>
+                                <span class="text-13 opacity-60">{{ __('Placed') }}: {{ $order->created_at?->format('Y-m-d H:i') }}</span>
+                            </div>
+                            <div class="mt-12">
+                                @foreach ($order->items as $item)
+                                    <div class="text-14">{{ $item->item_name }} x {{ $item->quantity }}</div>
+                                @endforeach
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     @endif
 
     {{-- B. SEHEMU YA STAFF (Work Tasks / Operations) --}}
     @if(!$isGuest)
-        <div class="content-box p-25 bg-white rounded-12 shadow-sm border-light">
+        <div class="content-box p-25 bg-white shadow-sm border-light" style="border-radius:0;">
             <h2 class="text-20 fw-700 mb-15">
-                @if($isMaintenance) {{ __('Current Maintenance Tasks') }} @else {{ __('Recent System Activity') }} @endif
+                @if($canManageMaintenance) {{ __('Current Maintenance Tasks') }} @else {{ __('Role-based Operations') }} @endif
             </h2>
             <p class="text-14 opacity-60">
-                {{ __('Use the sidebar to access full management tools for your specific role.') }}
+                {{ __('This dashboard now exposes tools according to the permissions assigned to your role.') }}
             </p>
 
             {{-- Quick Shortcuts --}}
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-                @if($isMaintenance)
-                    <a href="{{ route('admin.maintenance.index') }}" class="dash-btn dash-btn--outline w-full">{{ __('Go to Job List') }}</a>
-                    <a href="{{ route('admin.rooms.index') }}" class="dash-btn dash-btn--outline w-full">{{ __('Update Room Status') }}</a>
+                @if($canManageMaintenance)
+                    <a href="{{ $canOpenAdmin ? route('admin.maintenance.index') : route('reception.maintenance.index') }}" class="dash-btn dash-btn--outline w-full">{{ __('Go to Job List') }}</a>
+                    <a href="{{ $canOpenAdmin ? route('admin.rooms.index') : route('reception.rooms.index') }}" class="dash-btn dash-btn--outline w-full">{{ __('Update Room Status') }}</a>
                 @endif
-                @if($isReception)
-                    <a href="{{ route('admin.bookings.index') }}" class="dash-btn dash-btn--outline w-full">{{ __('Check-ins List') }}</a>
+                @if($canManageBookings)
+                    <a href="{{ $canOpenAdmin ? route('admin.bookings.index') : route('reception.bookings.index') }}" class="dash-btn dash-btn--outline w-full">{{ __('Check-ins List') }}</a>
                     <a href="{{ route('reception.dashboard') }}" class="dash-btn dash-btn--outline w-full">{{ __('Reception Desk') }}</a>
+                @endif
+                @if($canManageCustomers)
+                    <a href="{{ $canOpenAdmin ? route('admin.customers.index') : route('reception.customers.index') }}" class="dash-btn dash-btn--outline w-full">{{ __('Customers') }}</a>
+                @endif
+                @if($canViewReports)
+                    <a href="{{ $canOpenAdmin ? route('admin.reports.index') : route('reception.reports.index') }}" class="dash-btn dash-btn--outline w-full">{{ __('Reports') }}</a>
+                @endif
+                @if($canManageSettings && $canOpenAdmin)
+                    <a href="{{ route('admin.settings.edit') }}" class="dash-btn dash-btn--outline w-full">{{ __('System Settings') }}</a>
                 @endif
             </div>
         </div>

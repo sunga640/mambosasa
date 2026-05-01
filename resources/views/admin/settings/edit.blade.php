@@ -3,25 +3,142 @@
 @section('title', __('System settings'))
 
 @section('content')
+    @php
+        $headerLogoAssetId = old('logo_header_media_asset_id', $mediaAssets->firstWhere('path', $setting->logo_header)?->id);
+        $footerLogoAssetId = old('logo_footer_media_asset_id', $mediaAssets->firstWhere('path', $setting->logo_footer)?->id);
+        $heroSlideOneAssetId = old('hero_home_media_asset_id', $mediaAssets->firstWhere('path', $setting->hero_home_background)?->id);
+        $heroSlideTwoAssetId = old('hero_home_slide_two_media_asset_id', $mediaAssets->firstWhere('path', $setting->hero_home_slide_two)?->id);
+        $heroSlideThreeAssetId = old('hero_home_slide_three_media_asset_id', $mediaAssets->firstWhere('path', $setting->hero_home_slide_three)?->id);
+        $homeHeroGalleryAssetIds = old(
+            'home_hero_gallery_media_asset_ids',
+            $mediaAssets->whereIn('path', (array) ($setting->home_hero_gallery_paths ?? []))->pluck('id')->values()->all()
+        );
+        $homeViewsGalleryAssetIds = old(
+            'home_views_gallery_media_asset_ids',
+            $mediaAssets->whereIn('path', (array) ($setting->home_views_gallery_paths ?? []))->pluck('id')->values()->all()
+        );
+        $aboutGalleryAssetIds = old(
+            'about_gallery_media_asset_ids',
+            $mediaAssets->whereIn('path', (array) ($setting->about_gallery_paths ?? []))->pluck('id')->values()->all()
+        );
+        $emailTemplates = collect($emailTemplateDefinitions)->mapWithKeys(function ($definition, $key) use ($emailTemplates) {
+            $defaults = $definition['defaults'] ?? [];
+            $saved = old('email_templates.'.$key, $emailTemplates[$key] ?? []);
+
+            return [$key => array_merge($defaults, is_array($saved) ? $saved : [])];
+        })->all();
+    @endphp
     <style>
         .settings-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:1rem; }
-        .settings-tabs button { border:1px solid #d1d5db; background:#fff; border-radius:999px; padding:.4rem .85rem; font:inherit; cursor:pointer; }
-        .settings-tabs button.is-active { background:#111; color:#fff; border-color:#111; }
+        .settings-tabs button { border:1px solid rgba(213, 172, 66, 0.22); background:rgba(245,239,226,0.05); color:var(--brand-theme-text, #f5efe2); border-radius:999px; padding:.4rem .85rem; font:inherit; cursor:pointer; }
+        .settings-tabs button.is-active { background:var(--brand-theme-accent, #d5ac42); color:#1f232a; border-color:var(--brand-theme-accent, #d5ac42); }
         .settings-collapsible-title { user-select:none; }
+        .settings-preview-card { display:grid; gap:.9rem; padding:1rem 1rem 1.1rem; border:1px solid rgba(213, 172, 66, 0.18); background:var(--brand-theme-surface, #2e333b); margin-bottom:1rem; }
+        .settings-preview-card img { width:100%; max-width:360px; max-height:220px; object-fit:cover; display:block; }
+        .settings-grid-form { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.8rem 1rem; align-items:start; }
+        .settings-grid-form > h2,
+        .settings-grid-form > p,
+        .settings-grid-form > button,
+        .settings-grid-form > .email-template-wrap { grid-column:1 / -1; }
+        .settings-grid-form > .form-row { margin-bottom:0; }
+        .settings-grid-form > .form-row:has(textarea),
+        .settings-grid-form > .form-row:has(input[type="file"]),
+        .settings-grid-form > .form-row:has(details.media-picker-shell) { grid-column:1 / -1; }
+        .settings-grid-form .form-row label { margin-bottom:.28rem; font-size:.78rem; letter-spacing:.03em; }
+        .settings-grid-form .form-row input[type="text"],
+        .settings-grid-form .form-row input[type="email"],
+        .settings-grid-form .form-row input[type="password"],
+        .settings-grid-form .form-row input[type="url"],
+        .settings-grid-form .form-row input[type="number"],
+        .settings-grid-form .form-row input[type="date"],
+        .settings-grid-form .form-row input[type="time"],
+        .settings-grid-form .form-row select,
+        .settings-grid-form .form-row textarea {
+            max-width:none;
+            min-height:40px;
+            padding:.48rem .68rem;
+            font-size:.82rem;
+            border-radius:10px;
+        }
+        .settings-grid-form .form-row textarea { min-height:104px; }
+        .settings-grid-form .form-row input[type="time"] { max-width:none; }
+        .settings-grid-form .form-row input[type="file"] { max-width:none; font-size:.8rem; }
+        .email-template-wrap { width:100%; max-width:none; }
+        .email-template-card { margin-top:1.1rem; padding:1.15rem 1.2rem; border:1px solid rgba(213, 172, 66, 0.18); border-radius:16px; background:rgba(255,255,255,0.03); width:100%; }
+        .email-template-card:first-of-type { margin-top:0; }
+        .email-template-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:.9rem; }
+        .email-template-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.85rem; margin-top:.95rem; }
+        .email-template-tall { grid-column:1 / -1; }
+        .email-template-body textarea { min-height:120px; resize:vertical; }
+        .email-template-chiplist { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.85rem; }
+        .email-template-chip { border:1px solid rgba(213, 172, 66, 0.2); background:rgba(255,255,255,0.04); color:var(--brand-theme-text, #f5efe2); border-radius:999px; padding:.3rem .65rem; font-size:.78rem; cursor:pointer; }
+        .email-template-inline-toggle { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+        .email-template-toggle-btn { border:1px solid rgba(213, 172, 66, 0.22); background:rgba(255,255,255,0.04); color:var(--brand-theme-text, #f5efe2); border-radius:999px; padding:.38rem .8rem; font:inherit; cursor:pointer; }
+        .email-template-panel { display:none; }
+        .email-template-card.is-expanded .email-template-panel { display:block; }
+        .email-template-field-hint { margin-top:.55rem; font-size:.8rem; opacity:.68; }
+        .settings-inline-checkbox {
+            display: inline-flex !important;
+            align-items: center;
+            gap: .7rem;
+            margin-bottom: 0 !important;
+            font-weight: 700 !important;
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+        .settings-inline-checkbox input[type="checkbox"] {
+            margin: 0;
+            width: 1rem;
+            height: 1rem;
+            flex-shrink: 0;
+        }
+        @media (max-width: 900px) {
+            .settings-grid-form { grid-template-columns:1fr; }
+            .settings-grid-form > .form-row,
+            .settings-grid-form > .form-row:has(textarea),
+            .settings-grid-form > .form-row:has(input[type="file"]),
+            .settings-grid-form > .form-row:has(details.media-picker-shell) { grid-column:1 / -1; }
+        }
+        @media (max-width: 900px) {
+            .email-template-head { flex-direction:column; }
+            .email-template-grid { grid-template-columns:1fr; }
+        }
     </style>
     <h1 class="text-30">{{ __('System settings') }}</h1>
     <p class="text-15 mt-15" style="opacity:.85;max-width:40rem;line-height:1.5;">
         {{ __('These details appear in the public site header, footer, and fullscreen menu. Upload a hero image to replace the first slide background on the home page.') }}
     </p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem;">
+        <div class="settings-preview-card" style="margin-bottom:0;">
+            <div class="text-14" style="font-weight:700;">{{ __('Email setup status') }}</div>
+            <p class="text-13" style="opacity:.72;margin:0;">
+                {{ $setting->smtp_host && $setting->smtp_port ? __('SMTP is configured from admin settings.') : __('SMTP is not fully configured yet.') }}
+            </p>
+            <div class="text-12" style="opacity:.65;">
+                {{ __('Host') }}: {{ $setting->smtp_host ?: '—' }}<br>
+                {{ __('From') }}: {{ $setting->mail_from_address ?: '—' }}
+            </div>
+        </div>
+        <div class="settings-preview-card" style="margin-bottom:0;">
+            <div class="text-14" style="font-weight:700;">{{ __('Payment setup') }}</div>
+            <p class="text-13" style="opacity:.72;margin:0;">
+                {{ __('Gateway keys and provider setup are managed from the payment methods page.') }}
+            </p>
+            <div>
+                <a href="{{ route('admin.payment-methods.index') }}" class="dash-btn dash-btn--ghost">{{ __('Open payment methods') }}</a>
+            </div>
+        </div>
+    </div>
     <div class="settings-tabs">
         <button type="button" data-settings-tab="branding">{{ __('Business settings') }}</button>
         <button type="button" data-settings-tab="booking">{{ __('Booking settings') }}</button>
         <button type="button" data-settings-tab="email">{{ __('Email settings') }}</button>
+        <button type="button" data-settings-tab="integrations">{{ __('Integrations') }}</button>
         <button type="button" data-settings-tab="home">{{ __('Home/hero settings') }}</button>
         <button type="button" data-settings-tab="advanced">{{ __('Advanced settings') }}</button>
     </div>
 
-    <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" class="mt-30" data-autosave-key="admin-settings-edit">
+    <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" class="mt-30 settings-grid-form" data-autosave-key="admin-settings-edit">
         @csrf
         @method('PUT')
 
@@ -50,7 +167,7 @@
             'assets' => $mediaAssets,
             'name' => 'logo_header_media_asset_id',
             'label' => __('Or choose header logo from system gallery'),
-            'selected' => old('logo_header_media_asset_id'),
+            'selected' => $headerLogoAssetId,
         ])
         <div class="form-row">
             <label for="logo_footer">{{ __('Footer logo (often light / white)') }}</label>
@@ -65,7 +182,7 @@
             'assets' => $mediaAssets,
             'name' => 'logo_footer_media_asset_id',
             'label' => __('Or choose footer logo from system gallery'),
-            'selected' => old('logo_footer_media_asset_id'),
+            'selected' => $footerLogoAssetId,
         ])
 
         <h2 class="text-20 mt-30 mb-15" data-settings-group="branding">{{ __('Contact (header top bar & footer)') }}</h2>
@@ -203,6 +320,144 @@
             <input id="mail_from_name" type="text" name="mail_from_name" value="{{ old('mail_from_name', $setting->mail_from_name) }}" placeholder="{{ $setting->hotelDisplayName() }}">
             @error('mail_from_name')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
         </div>
+        <div class="form-row">
+            <label for="dashboard_theme_mode">{{ __('Dashboard theme mode') }}</label>
+            <select id="dashboard_theme_mode" name="dashboard_theme_mode">
+                <option value="system" @selected(old('dashboard_theme_mode', $setting->dashboard_theme_mode ?? 'system') === 'system')>{{ __('System default') }}</option>
+                <option value="dark" @selected(old('dashboard_theme_mode', $setting->dashboard_theme_mode ?? 'system') === 'dark')>{{ __('Dark') }}</option>
+                <option value="light" @selected(old('dashboard_theme_mode', $setting->dashboard_theme_mode ?? 'system') === 'light')>{{ __('Light') }}</option>
+            </select>
+            <p class="text-13 mt-5" style="opacity:.7;">{{ __('Controls all internal dashboards and settings surfaces.') }}</p>
+            @error('dashboard_theme_mode')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        <h2 class="text-20 mt-30 mb-15" data-settings-group="email">{{ __('Guest email templates') }}</h2>
+        <p class="text-14 mb-15" style="opacity:.75;max-width:48rem;">{{ __('Customize the subject, arrangement, call-to-action buttons, and guest-facing message content for each booking email flow. Click any variable below to insert it into the field you are editing.') }}</p>
+        <div class="email-template-wrap">
+        @foreach ($emailTemplateDefinitions as $templateKey => $templateDefinition)
+            @php($template = $emailTemplates[$templateKey] ?? ($templateDefinition['defaults'] ?? []))
+            <div class="email-template-card" data-email-template-card>
+                <div class="email-template-head">
+                    <div>
+                        <div class="text-18" style="font-weight:700;">{{ $templateDefinition['label'] }}</div>
+                        <p class="text-13 mt-5" style="opacity:.72;margin:0;max-width:46rem;">{{ $templateDefinition['description'] }}</p>
+                    </div>
+                    <div class="email-template-inline-toggle">
+                        <label class="text-13" style="font-weight:600;">
+                            <input type="hidden" name="email_templates[{{ $templateKey }}][enabled]" value="0">
+                            <input type="checkbox" name="email_templates[{{ $templateKey }}][enabled]" value="1" @checked((bool) ($template['enabled'] ?? false))>
+                            {{ __('Enabled') }}
+                        </label>
+                        <button type="button" class="email-template-toggle-btn" data-email-template-toggle>{{ __('More options') }}</button>
+                    </div>
+                </div>
+
+                <div class="form-row email-template-body">
+                    <label for="email_templates_{{ $templateKey }}_body">{{ __('Message content') }}</label>
+                    <textarea id="email_templates_{{ $templateKey }}_body" name="email_templates[{{ $templateKey }}][body]" rows="4" data-email-template-input>{{ $template['body'] ?? '' }}</textarea>
+                    <div class="email-template-field-hint">{{ __('This is the main guest message. Use the variables below to personalize it.') }}</div>
+                </div>
+
+                <div class="email-template-panel">
+                    <div class="email-template-grid">
+                        <div class="form-row email-template-tall">
+                            <label for="email_templates_{{ $templateKey }}_subject">{{ __('Email subject') }}</label>
+                            <input id="email_templates_{{ $templateKey }}_subject" type="text" name="email_templates[{{ $templateKey }}][subject]" value="{{ $template['subject'] ?? '' }}" data-email-template-input>
+                        </div>
+                        <div class="form-row">
+                            <label for="email_templates_{{ $templateKey }}_title">{{ __('Banner title') }}</label>
+                            <input id="email_templates_{{ $templateKey }}_title" type="text" name="email_templates[{{ $templateKey }}][title]" value="{{ $template['title'] ?? '' }}" data-email-template-input>
+                        </div>
+                        <div class="form-row">
+                            <label for="email_templates_{{ $templateKey }}_accent_color">{{ __('Accent color') }}</label>
+                            <input id="email_templates_{{ $templateKey }}_accent_color" type="text" name="email_templates[{{ $templateKey }}][accent_color]" value="{{ $template['accent_color'] ?? '#1f7ae0' }}" placeholder="#1f7ae0">
+                        </div>
+                        <div class="form-row email-template-tall">
+                            <label for="email_templates_{{ $templateKey }}_intro">{{ __('Opening line / greeting') }}</label>
+                            <textarea id="email_templates_{{ $templateKey }}_intro" name="email_templates[{{ $templateKey }}][intro]" rows="2" data-email-template-input>{{ $template['intro'] ?? '' }}</textarea>
+                        </div>
+                        <div class="form-row email-template-tall">
+                            <label for="email_templates_{{ $templateKey }}_highlight">{{ __('Highlight box content') }}</label>
+                            <textarea id="email_templates_{{ $templateKey }}_highlight" name="email_templates[{{ $templateKey }}][highlight]" rows="3" data-email-template-input>{{ $template['highlight'] ?? '' }}</textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="email_templates_{{ $templateKey }}_primary_button_label">{{ __('Primary button label') }}</label>
+                            <input id="email_templates_{{ $templateKey }}_primary_button_label" type="text" name="email_templates[{{ $templateKey }}][primary_button_label]" value="{{ $template['primary_button_label'] ?? '' }}" data-email-template-input>
+                        </div>
+                        <div class="form-row">
+                            <label for="email_templates_{{ $templateKey }}_secondary_button_label">{{ __('Secondary button label') }}</label>
+                            <input id="email_templates_{{ $templateKey }}_secondary_button_label" type="text" name="email_templates[{{ $templateKey }}][secondary_button_label]" value="{{ $template['secondary_button_label'] ?? '' }}" data-email-template-input>
+                        </div>
+                        <div class="form-row email-template-tall">
+                            <label for="email_templates_{{ $templateKey }}_footer_note">{{ __('Footer note') }}</label>
+                            <textarea id="email_templates_{{ $templateKey }}_footer_note" name="email_templates[{{ $templateKey }}][footer_note]" rows="3" data-email-template-input>{{ $template['footer_note'] ?? '' }}</textarea>
+                        </div>
+                        <div class="form-row email-template-tall">
+                            <label class="text-13" style="font-weight:600;">
+                                <input type="hidden" name="email_templates[{{ $templateKey }}][details_enabled]" value="0">
+                                <input type="checkbox" name="email_templates[{{ $templateKey }}][details_enabled]" value="1" @checked((bool) ($template['details_enabled'] ?? false))>
+                                {{ __('Show booking detail box') }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="email-template-chiplist">
+                    @foreach ($templateDefinition['placeholders'] as $placeholder)
+                        <button type="button" class="email-template-chip" data-insert-variable="{{ $placeholder }}">{{ $placeholder }}</button>
+                    @endforeach
+                </div>
+            </div>
+        @endforeach
+        </div>
+
+        <h2 class="text-20 mt-30 mb-15" data-settings-group="integrations">{{ __('Restaurant system integration') }}</h2>
+        <p class="text-14 mb-15" style="opacity:.75;max-width:50rem;">
+            {{ __('This connects the guest portal to your separate restaurant system. Guests never receive raw API keys in the browser. Instead, this system creates a short-lived signed token and redirects them to the restaurant platform.') }}
+        </p>
+        <div class="form-row">
+            <label class="settings-inline-checkbox"><input type="checkbox" name="restaurant_integration_enabled" value="1" @checked(old('restaurant_integration_enabled', $setting->restaurant_integration_enabled))> <span>{{ __('Enable restaurant integration') }}</span></label>
+            @error('restaurant_integration_enabled')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        <div class="form-row">
+            <label for="restaurant_api_base_url">{{ __('Restaurant system base URL') }}</label>
+            <input id="restaurant_api_base_url" type="url" name="restaurant_api_base_url" value="{{ old('restaurant_api_base_url', $setting->restaurant_api_base_url) }}" placeholder="https://restaurant.example.com">
+            <p class="text-13 mt-5" style="opacity:.7;">{{ __('Use the main HTTPS URL of the restaurant system. The launch path below will be appended to it.') }}</p>
+            @error('restaurant_api_base_url')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        <div class="form-row">
+            <label for="restaurant_sso_entry_path">{{ __('Restaurant SSO / launch path') }}</label>
+            <input id="restaurant_sso_entry_path" type="text" name="restaurant_sso_entry_path" value="{{ old('restaurant_sso_entry_path', $setting->restaurant_sso_entry_path ?: 'restaurant/sso/hotel') }}" placeholder="restaurant/sso/hotel">
+            <p class="text-13 mt-5" style="opacity:.7;">{{ __('Example: restaurant/sso/hotel or api/hotel/sso-entry. This path must exist on the restaurant system and verify the token signature.') }}</p>
+            @error('restaurant_sso_entry_path')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        <div class="form-row">
+            <label for="restaurant_api_key">{{ __('Server API key (optional)') }}</label>
+            <input id="restaurant_api_key" type="text" name="restaurant_api_key" value="{{ old('restaurant_api_key') }}" placeholder="{{ $setting->restaurant_api_key ? __('Saved - leave blank to keep current key') : __('Paste API key') }}">
+            <p class="text-13 mt-5" style="opacity:.7;">{{ __('Used only for server-to-server calls from this hotel system to the restaurant API. It is stored encrypted and never exposed to guests.') }}</p>
+            @error('restaurant_api_key')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        <div class="form-row">
+            <label for="restaurant_api_secret">{{ __('Server API secret (optional)') }}</label>
+            <input id="restaurant_api_secret" type="password" name="restaurant_api_secret" value="{{ old('restaurant_api_secret') }}" placeholder="{{ $setting->restaurant_api_secret ? __('Saved - leave blank to keep current secret') : __('Paste API secret') }}">
+            @error('restaurant_api_secret')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        <div class="form-row">
+            <label for="restaurant_sso_shared_secret">{{ __('Shared secret for signed guest access') }}</label>
+            <input id="restaurant_sso_shared_secret" type="password" name="restaurant_sso_shared_secret" value="{{ old('restaurant_sso_shared_secret') }}" placeholder="{{ $setting->restaurant_sso_shared_secret ? __('Saved - leave blank to keep current secret') : __('Paste shared secret') }}">
+            <p class="text-13 mt-5" style="opacity:.7;">{{ __('This is the most important field. The restaurant system must have the same secret so it can verify hotel-issued guest tokens.') }}</p>
+            @error('restaurant_sso_shared_secret')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        <div class="form-row">
+            <label for="restaurant_api_timeout_seconds">{{ __('API timeout in seconds') }}</label>
+            <input id="restaurant_api_timeout_seconds" type="number" name="restaurant_api_timeout_seconds" min="5" max="120" value="{{ old('restaurant_api_timeout_seconds', $setting->restaurantApiTimeoutSeconds()) }}">
+            @error('restaurant_api_timeout_seconds')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        <div class="form-row">
+            <label for="restaurant_token_ttl_minutes">{{ __('Guest access token lifetime (minutes)') }}</label>
+            <input id="restaurant_token_ttl_minutes" type="number" name="restaurant_token_ttl_minutes" min="1" max="120" value="{{ old('restaurant_token_ttl_minutes', $setting->restaurantTokenTtlMinutes()) }}">
+            <p class="text-13 mt-5" style="opacity:.7;">{{ __('Recommended 3-10 minutes. The shorter the lifetime, the safer the handoff token becomes.') }}</p>
+            @error('restaurant_token_ttl_minutes')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
 
         <h2 class="text-20 mt-30 mb-15" data-settings-group="home">{{ __('Home page — first content block (trust)') }}</h2>
         <p class="text-14 mb-15" style="opacity:.75;max-width:44rem;">{{ __('Leave fields empty to use the default English text on the public home page.') }}</p>
@@ -228,7 +483,7 @@
         </div>
 
         <h2 class="text-20 mt-30 mb-15" data-settings-group="home">{{ __('Home page hero') }}</h2>
-        <p class="text-14 mb-15" style="opacity:.75;max-width:44rem;">{{ __('Paste a direct HTTPS image link (e.g. from your CDN or Unsplash) to load backgrounds from the web. If set, the home URL takes priority over the uploaded file for the first slide.') }}</p>
+        <p class="text-14 mb-15" style="opacity:.75;max-width:44rem;">{{ __('Each home hero slide can now come from upload, direct HTTPS image URL, or the built-in media library below. If an HTTPS URL is set for slide 1, it takes priority over file and media-library selection.') }}</p>
         <div class="form-row">
             <label for="hero_home_image_url">{{ __('Home first slide — image URL (HTTPS)') }}</label>
             <input id="hero_home_image_url" type="url" name="hero_home_image_url" value="{{ old('hero_home_image_url', $setting->hero_home_image_url) }}" placeholder="https://images.example.com/hero.jpg">
@@ -244,7 +499,7 @@
             <label for="hero_home_background">{{ __('First section background image (upload)') }}</label>
             @if ($setting->hero_home_background)
                 <div class="mb-10"><img src="{{ $setting->heroHomeBackgroundUrl() }}" alt="" style="max-width:280px;border-radius:8px;"></div>
-                <label class="text-13" style="font-weight:400;"><input type="checkbox" name="remove_hero_background" value="1" @checked(old('remove_hero_background'))> {{ __('Remove hero image (use default template)') }}</label>
+                <label class="settings-inline-checkbox" style="font-weight:400 !important;text-transform:none;"><input type="checkbox" name="remove_hero_background" value="1" @checked(old('remove_hero_background'))> <span>{{ __('Remove hero image (use default template)') }}</span></label>
             @endif
             <input id="hero_home_background" type="file" name="hero_home_background" accept="image/*">
             @error('hero_home_background')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
@@ -252,10 +507,69 @@
         @include('partials.media-picker', [
             'assets' => $mediaAssets,
             'name' => 'hero_home_media_asset_id',
-            'label' => __('Or choose hero image from system gallery'),
-            'selected' => old('hero_home_media_asset_id'),
+            'label' => __('Or choose slide 1 image from system media library'),
+            'selected' => $heroSlideOneAssetId,
+        ])
+        <div class="form-row">
+            <label for="hero_home_slide_two">{{ __('Home slide 2 image') }}</label>
+            @if ($setting->hero_home_slide_two)
+                <div class="mb-10"><img src="{{ $setting->heroHomeSlideTwoUrl() }}" alt="" style="max-width:280px;border-radius:8px;"></div>
+                <label class="settings-inline-checkbox" style="font-weight:400 !important;text-transform:none;"><input type="checkbox" name="remove_hero_slide_two" value="1" @checked(old('remove_hero_slide_two'))> <span>{{ __('Remove slide 2 image') }}</span></label>
+            @endif
+            <input id="hero_home_slide_two" type="file" name="hero_home_slide_two" accept="image/*">
+            @error('hero_home_slide_two')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        @include('partials.media-picker', [
+            'assets' => $mediaAssets,
+            'name' => 'hero_home_slide_two_media_asset_id',
+            'label' => __('Or choose slide 2 image from system media library'),
+            'selected' => $heroSlideTwoAssetId,
+        ])
+        <div class="form-row">
+            <label for="hero_home_slide_three">{{ __('Home slide 3 image') }}</label>
+            @if ($setting->hero_home_slide_three)
+                <div class="mb-10"><img src="{{ $setting->heroHomeSlideThreeUrl() }}" alt="" style="max-width:280px;border-radius:8px;"></div>
+                <label class="settings-inline-checkbox" style="font-weight:400 !important;text-transform:none;"><input type="checkbox" name="remove_hero_slide_three" value="1" @checked(old('remove_hero_slide_three'))> <span>{{ __('Remove slide 3 image') }}</span></label>
+            @endif
+            <input id="hero_home_slide_three" type="file" name="hero_home_slide_three" accept="image/*">
+            @error('hero_home_slide_three')<div class="text-accent-1 text-13 mt-5">{{ $message }}</div>@enderror
+        </div>
+        @include('partials.media-picker', [
+            'assets' => $mediaAssets,
+            'name' => 'hero_home_slide_three_media_asset_id',
+            'label' => __('Or choose slide 3 image from system media library'),
+            'selected' => $heroSlideThreeAssetId,
+        ])
+        <div class="form-row">
+            <label>{{ __('Home hero slider gallery (multi select from media library)') }}</label>
+            <p class="text-13 mt-5" style="opacity:.7;">{{ __('Select multiple gallery images for the homepage slider. When this list has images, it becomes the main source for the home slider.') }}</p>
+        </div>
+        @include('partials.media-picker', [
+            'assets' => $mediaAssets,
+            'name' => 'home_hero_gallery_media_asset_ids',
+            'label' => __('Choose multiple slider images from system media library'),
+            'selected' => $homeHeroGalleryAssetIds,
+            'multiple' => true,
         ])
 
+        <h2 class="text-20 mt-30 mb-15" data-settings-group="home">{{ __('Hotel views gallery section') }}</h2>
+        <p class="text-14 mb-15" style="opacity:.75;max-width:44rem;">{{ __('Select multiple images for the modern hotel views section on the homepage. These will be shown in a styled gallery section.') }}</p>
+        @include('partials.media-picker', [
+            'assets' => $mediaAssets,
+            'name' => 'home_views_gallery_media_asset_ids',
+            'label' => __('Choose multiple hotel view images from system media library'),
+            'selected' => $homeViewsGalleryAssetIds,
+            'multiple' => true,
+        ])
+        <h2 class="text-20 mt-30 mb-15" data-settings-group="home">{{ __('About page gallery') }}</h2>
+        <p class="text-14 mb-15" style="opacity:.75;max-width:44rem;">{{ __('Select the images that should appear inside the About page content blocks. These will replace the current default about images.') }}</p>
+        @include('partials.media-picker', [
+            'assets' => $mediaAssets,
+            'name' => 'about_gallery_media_asset_ids',
+            'label' => __('Choose multiple About page images from system media library'),
+            'selected' => $aboutGalleryAssetIds,
+            'multiple' => true,
+        ])
         <h2 class="text-20 mt-30 mb-15" data-settings-group="advanced">{{ __('UI customization (per-page heroes)') }}</h2>
         <p class="text-14 mb-15" style="opacity:.75;max-width:44rem;line-height:1.5;">
             {{ __('Optional JSON: page slug (URL segment) → HTTPS image URL or storage path. Overrides the global inner hero for that page. Keys examples: about, contact, terms, pricing, faq, search, branches.') }}
@@ -284,6 +598,7 @@
     (function () {
         var form = document.querySelector('form[data-autosave-key="admin-settings-edit"]');
         if (!form) return;
+        var activeTemplateInput = null;
 
         var headings = Array.prototype.slice.call(form.querySelectorAll('h2[data-settings-group]'));
         if (!headings.length) return;
@@ -326,6 +641,40 @@
         document.querySelectorAll('[data-settings-tab]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 openGroup(btn.dataset.settingsTab);
+            });
+        });
+
+        form.querySelectorAll('[data-email-template-input]').forEach(function (field) {
+            field.addEventListener('focus', function () {
+                activeTemplateInput = field;
+            });
+            field.addEventListener('click', function () {
+                activeTemplateInput = field;
+            });
+        });
+
+        form.querySelectorAll('[data-insert-variable]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (!activeTemplateInput) return;
+
+                var token = btn.getAttribute('data-insert-variable') || '';
+                var start = activeTemplateInput.selectionStart || 0;
+                var end = activeTemplateInput.selectionEnd || 0;
+                var value = activeTemplateInput.value || '';
+
+                activeTemplateInput.value = value.slice(0, start) + token + value.slice(end);
+                activeTemplateInput.focus();
+                activeTemplateInput.selectionStart = activeTemplateInput.selectionEnd = start + token.length;
+            });
+        });
+
+        form.querySelectorAll('[data-email-template-toggle]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var card = btn.closest('[data-email-template-card]');
+                if (!card) return;
+
+                var expanded = card.classList.toggle('is-expanded');
+                btn.textContent = expanded ? '{{ __('Hide options') }}' : '{{ __('More options') }}';
             });
         });
 

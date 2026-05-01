@@ -7,135 +7,186 @@
     @include('partials.favicon')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/vendors.css') }}">
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
     <link rel="stylesheet" href="{{ asset('css/account-bridge.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <title>@isset($layoutTitle){{ $layoutTitle }} — @endisset{{ $dashboardSettings->hotelDisplayName() }}</title>
-
+    @include('partials.footer-theme-overrides')
+    <title>@isset($layoutTitle){{ $layoutTitle }} - @endisset{{ $dashboardSettings->hotelDisplayName() }}</title>
     <style>
-        /* Minimalist Auth Style */
-        body {
-            background-color: #ffffff; /* Background nyeupe safi */
-            color: #122223;
-            font-family: 'Jost', sans-serif;
+        :root {
+            --auth-ink: #122223;
+            --auth-muted: #6b7280;
+            --auth-gold: #d5ac42;
         }
-        .auth-minimal-wrapper {
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Jost', sans-serif;
+            color: #d9e1ea;
+            background: #23262b;
+        }
+        .auth-shell {
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2rem 1.25rem;
+            padding: 2rem;
         }
-        .auth-minimal-content {
-            width: 100%;
-            max-width: 400px; /* Upana wa fomu */
-        }
-        /* Kuondoa muonekano wa container/card */
-        .auth-minimal-form-container {
+        .auth-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(1.5rem, 4vw, 4.5rem);
             background: transparent;
-            box-shadow: none;
-            border: none;
-            padding: 0;
-        }.auth-brand-name {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: clamp(1.4rem, 2.5vw, 1.9rem); /* Imepunguzwa kidogo ili kutosha mstari mmoja */
-            font-weight: 600;
-            color: #122223;
-            margin-top: 1rem;
+            width: 100%;
+        }
+        .auth-panel__card {
+            width: min(100%, 31.5rem);
+        }
+        .auth-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-decoration: none;
+            color: inherit;
+        }
+        .auth-brand img {
+            max-height: 4.7rem;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 0.8rem;
+        }
+        .auth-brand__name {
             display: block;
-            white-space: nowrap; /* HII NDIO INAFANYA ISOMEKE MSTARI MMOJA */
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(2rem, 3.4vw, 3rem);
+            line-height: 0.98;
+            font-weight: 700;
         }
-        /* Mitindo ya Input ili zionekane vizuri kwenye plain background */
-        input[type="text"], input[type="email"], input[type="password"] {
-            border: none !important;
-            border-bottom: 1px solid #e2e8f0 !important; /* Mstari wa chini tu */
-            border-radius: 0 !important;
-            padding: 0.8rem 0 !important;
-            background: transparent !important;
-            transition: border-color 0.3s;
+        .auth-copy {
+            margin: 2rem 0 2.1rem;
         }
-        input:focus {
-            border-bottom-color: #122223 !important;
-            box-shadow: none !important;
+        .auth-copy h1 {
+            margin: 0 0 0.6rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--auth-gold);
+        }
+        .auth-copy p {
+            margin: 0;
+            color: #c7d2fe;
+            line-height: 1.75;
         }
         .account-field-stack {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.7rem;
         }
         label {
-            font-weight: 500;
-            font-size: 0.9rem;
-            color: #64748b;
+            display: inline-block;
+            margin-bottom: 0.7rem;
+            font-size: 0.86rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            color: var(--auth-gold);
         }
-
-    /* Staili ya Button */
-    button[type="submit"], .dash-btn--primary {
-        width: 100%;
-        margin-top: 2rem;
-        padding: 0.9rem !important;
-        background-color: #122223 !important; /* Rangi ya giza uliyotumia */
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 50px !important; /* Inafanya iwe na duara (Pill shape) */
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease; /* Inafanya hover iwe laini */
-    }
-
-    /* Hover Effect ya Button */
-    button[type="submit"]:hover {
-        background-color: #2a3d3e !important; /* Rangi inabadilika kidogo ukisogeza mouse */
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transform: translateY(-1px); /* Inanyanyuka kidogo */
-    }
-
-    /* Mpangilio wa Input na Icon ya Jicho */
-    .password-wrapper {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .password-wrapper input {
-        width: 100%;
-        padding-right: 40px !important; /* Acha nafasi ya icon */
-    }
-
-    .password-toggle-btn {
-        position: absolute;
-        right: 0;
-        bottom: 8px;
-        background: none;
-        border: none;
-        color: #64748b;
-        cursor: pointer;
-        padding: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .password-toggle-btn:hover {
-        color: #122223;
-    }
-    /* Inazuia rangi ya bluu/njano wakati browser inajaza email/password yenyewe */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
-    -webkit-text-fill-color: #122223 !important;
-    transition: background-color 5000s ease-in-out 0s;
-}
+        .account-field-input,
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.9rem 0.05rem !important;
+            border: none !important;
+            border-bottom: 1px solid rgba(213, 172, 66, 0.4) !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            color: #f8fafc !important;
+            font-size: 1rem !important;
+            transition: border-color 0.22s ease;
+        }
+        .account-field-input:focus,
+        input:focus {
+            outline: none !important;
+            border-bottom-color: rgba(213, 172, 66, 0.9) !important;
+            box-shadow: none !important;
+        }
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .password-wrapper .account-field-input {
+            padding-right: 2.8rem !important;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #cbd5e1;
+            cursor: pointer;
+            padding: 0.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-account-primary,
+        button[type="submit"],
+        .dash-btn--primary {
+            width: 100%;
+            margin-top: 1.6rem;
+            padding: 1rem 1.2rem !important;
+            background: #d5ac42 !important;
+            color: #111827 !important;
+            border: none !important;
+            border-radius: 999px !important;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+            box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
+        }
+        .btn-account-primary:hover,
+        button[type="submit"]:hover,
+        .dash-btn--primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+        }
+        .account-link {
+            color: #cbd5e1;
+            text-decoration: none;
+        }
+        .account-link:hover {
+            color: #ffffff;
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #23262b inset !important;
+            -webkit-text-fill-color: #f8fafc !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        @media (max-width: 1023px) {
+            .auth-shell { padding: 1rem; }
+        }
+        @media (max-width: 767px) {
+            .auth-panel {
+                padding: 1.25rem;
+            }
+            .auth-brand__name {
+                font-size: clamp(1.8rem, 9vw, 2.45rem);
+            }
+        }
     </style>
 </head>
-<body>
+<body class="auth-theme-body">
     @php
         $authCompanyName = trim((string) ($dashboardSettings->company_name ?? ''));
         if ($authCompanyName === '') {
@@ -143,26 +194,21 @@ input:-webkit-autofill:active {
         }
     @endphp
 
-    <div class="auth-minimal-wrapper">
-        <div class="auth-minimal-content">
-            <!-- Logo Section -->
-            <div style="text-align:center; margin-bottom: 3rem;">
-                <a href="{{ route('site.home') }}" style="text-decoration:none;">
-                    <img src="{{ $dashboardSettings->headerLogoUrl() }}" alt="" style="max-height:70px; width:auto;">
-                    <strong class="auth-brand-name">{{ $authCompanyName }}</strong>
-                </a>
-            </div>
+    <div class="auth-shell">
+        <main class="auth-panel">
+            <div class="auth-panel__card">
 
-            <!-- Fomu inaingia hapa -->
-            <div class="auth-minimal-form-container">
+                <div class="auth-copy">
+                    <h1>@isset($layoutTitle){{ $layoutTitle }}@else{{ __('Welcome back') }}@endisset</h1>
+                    <p>{{ __('Use your account details below to continue into the guest area.') }}</p>
+                </div>
+
                 {{ $slot }}
             </div>
-        </div>
+        </main>
     </div>
 
-    <script src="{{ asset('js/vendors.js') }}"></script>
-    <script src="{{ asset('js/main.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     @include('partials.swal')
+    @include('partials.client-security-deter')
 </body>
 </html>

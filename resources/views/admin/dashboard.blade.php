@@ -4,6 +4,10 @@
 
 @section('content')
     <style>
+        .dashboard-white-number {
+            color: #ffffff !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, .22);
+        }
         .dash-content-card .dash-btn,
         .dash-content-card .button,
         .dash-content-card button {
@@ -39,8 +43,8 @@
         </div>
     </div>
     @include('partials.dashboard-month-calendar')
-    @if ($notificationUnreadCount > 0 || $recentDashboardNotifications->isNotEmpty())
-    <div class="mb-25" style="padding:1.25rem;border:1px solid #fde68a;border-radius:12px;background:#fffbeb;">
+    @if (false)
+    <div class="mb-25" style="padding:1.25rem;border:1px solid #fde68a;border-radius:0;background:#fffbeb;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;">
             <h2 class="text-18" style="margin:0;">{{ __('Notifications') }}</h2>
             <a href="{{ route('admin.notifications.index') }}" class="dash-btn dash-btn--ghost">{{ __('Manage all') }}</a>
@@ -65,16 +69,15 @@
 
 <!-- BRANCH SUMMARY (TOP BAR) -->
 @isset($branchSummary)
-    <div class="mb-25" style="padding:1.25rem 1.5rem; border:1px solid #e2e8f0; border-radius:12px; background:linear-gradient(135deg,#f8fafc 0%,#fff 100%); display:flex; flex-wrap:wrap; gap:1.5rem; justify-content:space-between; align-items:center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div class="mb-20 hotel-branches-card" style="display:inline-flex;align-items:center;gap:1rem;padding:.85rem 1rem;border:1px solid #e2e8f0;border-radius:0;background:linear-gradient(135deg,#f8fafc 0%,#fff 100%);box-shadow:0 1px 3px rgba(0,0,0,0.05);">
         <div>
-            <div style="font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#64748b; font-weight:700;">{{ __('Hotel Branches') }}</div>
-            <p style="margin:.5rem 0 0; font-size:16px;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:700;">{{ __('Hotel branches') }}</div>
+            <div style="margin-top:.35rem;font-size:14px;display:flex;gap:.85rem;flex-wrap:wrap;">
                 <span style="color:#15803d; font-weight:700;">● {{ __('Active') }}: {{ number_format($branchSummary['active']) }}</span>
-                <span style="margin:0 .75rem; opacity:.3;">|</span>
                 <span style="color:#b45309; font-weight:700;">○ {{ __('Inactive') }}: {{ number_format($branchSummary['inactive']) }}</span>
-            </p>
+            </div>
         </div>
-        <a href="{{ route('admin.payments.pending') }}" class="dash-btn dash-btn--primary" style="text-decoration:none; padding: 10px 20px; font-size: 14px; border-radius: 8px;">{{ __('Review Pending Payments') }}</a>
+        <a href="{{ route('admin.payments.pending') }}" class="dash-btn dash-btn--primary" style="text-decoration:none;padding:.55rem .9rem;font-size:13px;">{{ __('Review Pending Payments') }}</a>
     </div>
 @endisset
 
@@ -82,25 +85,25 @@
 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1.25rem; margin-bottom: 2.5rem;">
 
     <!-- REVENUE TODAY -->
-    <div style="padding:1.25rem; border-radius:12px; border:1px solid #bfdbfe; background:#eff6ff; box-shadow: 0 2px 4px rgba(37,99,235,0.05);">
+    <div style="padding:1.25rem; border-radius:0; border:1px solid #bfdbfe; background:#eff6ff; box-shadow: 0 2px 4px rgba(37,99,235,0.05);">
         <div style="font-size:11px; text-transform:uppercase; color:#1e40af; font-weight:700; letter-spacing:0.05em;">{{ __('Revenue (Today)') }}</div>
         <div style="font-size:24px; font-weight:800; color:#1e3a8a; margin-top:8px;">{{ number_format($kpis['revenue_today'] ?? 0, 0) }}</div>
     </div>
 <!-- REVENUE MONTH -->
-<div style="padding:1.25rem; border-radius:12px; border:1px solid #bbf7d0; background:#f0fdf4;">
+<div style="padding:1.25rem; border-radius:0; border:1px solid #bbf7d0; background:#f0fdf4;">
     <div style="font-size:11px; text-transform:uppercase; color:#15803d; font-weight:700; letter-spacing:0.05em;">{{ __('Revenue (Month)') }}</div>
     <!-- Namba 0 hapa chini inaondoa decimal zote -->
     <div style="font-size:24px; font-weight:800; color:#14532d; margin-top:8px;">{{ number_format($kpis['revenue_month'] ?? 0, 0) }}</div>
 </div>
 
     <!-- EXPENSES -->
-    <div style="padding:1.25rem; border-radius:12px; border:1px solid #fecaca; background:#fff1f2;">
+    <div style="padding:1.25rem; border-radius:0; border:1px solid #fecaca; background:#fff1f2;">
         <div style="font-size:11px; text-transform:uppercase; color:#b91c1c; font-weight:700; letter-spacing:0.05em;">{{ __('Expenses (Month)') }}</div>
         <div style="font-size:24px; font-weight:800; color:#9f1239; margin-top:8px;">{{ number_format($kpis['expenses_month_total'] ?? 0, 0) }}</div>
     </div>
 
     <!-- NET PROFIT/LOSS (DYNAMIC) -->
-    <div style="padding:1.25rem; border-radius:12px; border:1px solid {{ $kpis['profit_month'] >= 0 ? '#86efac' : '#fda4af' }}; background: {{ $kpis['profit_month'] >= 0 ? '#f0fdf4' : '#fff1f2' }}; border-width: 2px;">
+    <div style="padding:1.25rem; border-radius:0; border:1px solid {{ $kpis['profit_month'] >= 0 ? '#86efac' : '#fda4af' }}; background: {{ $kpis['profit_month'] >= 0 ? '#f0fdf4' : '#fff1f2' }}; border-width: 2px;">
         <div style="font-size:11px; text-transform:uppercase; color:{{ $kpis['profit_month'] >= 0 ? '#166534' : '#9f1239' }}; font-weight:800; letter-spacing:0.05em;">{{ __('Net Profit / Loss') }}</div>
         <div style="display:flex; align-items:baseline; gap:10px; margin-top:8px;">
             <div style="font-size:24px; font-weight:800; color:{{ $kpis['profit_month'] >= 0 ? '#14532d' : '#881337' }};">{{ number_format($kpis['profit_month'], 0) }}</div>
@@ -111,61 +114,80 @@
     </div>
 
     <!-- BOOKINGS -->
-    <div style="padding:1.25rem; border-radius:12px; border:1px solid #e2e8f0; background:#ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+    <div style="padding:1.25rem; border-radius:0; border:1px solid #e2e8f0; background:#ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
         <div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700;">{{ __('Total Bookings') }}</div>
         <div style="font-size:26px; font-weight:800; color:#0f172a; margin-top:5px;">{{ number_format($kpis['bookings_total']) }}</div>
     </div>
 
     <!-- CONFIRMED -->
-    <div style="padding:1.25rem; border-radius:12px; border:1px solid #bbf7d0; background:#f0fdf4;">
+    <div style="padding:1.25rem; border-radius:0; border:1px solid #bbf7d0; background:#f0fdf4;">
         <div style="font-size:11px; text-transform:uppercase; color:#166534; font-weight:700;">{{ __('Confirmed') }}</div>
         <div style="font-size:26px; font-weight:800; color:#14532d; margin-top:5px;">{{ number_format($kpis['bookings_confirmed']) }}</div>
     </div>
 
     <!-- PENDING -->
-    <div style="padding:1.25rem; border-radius:12px; border:1px solid #fde68a; background:#fffbeb;">
+    <div style="padding:1.25rem; border-radius:0; border:1px solid #fde68a; background:#fffbeb;">
         <div style="font-size:11px; text-transform:uppercase; color:#92400e; font-weight:700;">{{ __('Pending Pay') }}</div>
         <div style="font-size:26px; font-weight:800; color:#78350f; margin-top:5px;">{{ number_format($kpis['bookings_pending']) }}</div>
     </div>
 
     <!-- ROOMS -->
-    <div style="padding:1.25rem; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc;">
+    <div style="padding:1.25rem; border-radius:0; border:1px solid #e2e8f0; background:#f8fafc;">
         <div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700;">{{ __('Total Rooms') }}</div>
         <div style="font-size:26px; font-weight:800; color:#334155; margin-top:5px;">{{ number_format($kpis['rooms']) }}</div>
     </div>
 
     <!-- CONTACT MESSAGES -->
-    <div style="padding:1.25rem; border-radius:12px; border:1px solid #ddd6fe; background:#f5f3ff;">
-        <div style="font-size:11px; text-transform:uppercase; color:#5b21b6; font-weight:700;">{{ __('Contact Messages') }}</div>
-        <div style="font-size:26px; font-weight:800; color:#4c1d95; margin-top:5px;">{{ number_format($kpis['contact_messages']) }}</div>
+    <div style="padding:1.25rem; border-radius:0; border:1px solid #7c3aed; background:linear-gradient(135deg,#312e81 0%,#1f2937 100%);">
+        <div style="font-size:11px; text-transform:uppercase; color:#c4b5fd; font-weight:700;">{{ __('Contact Messages') }}</div>
+        <div style="font-size:26px; font-weight:800; color:#ffffff; margin-top:5px;">{{ number_format($kpis['contact_messages']) }}</div>
     </div>
 
 </div>
 
 <!-- CHARTS SECTION (Ipande juu zaidi sasa) -->
-<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem;">
-    <div style="padding:1rem; border:1px solid #e5e5e5; border-radius:10px; background:#fff; height:280px;">
+<div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1.2rem;">
+    <div style="padding:1rem; border:1px solid #e5e5e5; border-radius:0; background:#fff; height:420px;">
         <h2 style="font-size:15px; margin:0 0 0.75rem; color:#334155;">{{ __('Bookings trend (14 days)') }}</h2>
-        <div style="position:relative; height:200px;">
+        <div style="position:relative; height:330px;">
             <canvas id="chartBookingsTrend"></canvas>
         </div>
     </div>
-    <div style="padding:1rem; border:1px solid #e5e5e5; border-radius:10px; background:#fff; height:280px;">
+    <div style="padding:1rem; border:1px solid #e5e5e5; border-radius:0; background:#fff; height:420px;">
         <h2 style="font-size:15px; margin:0 0 0.75rem; color:#334155;">{{ __('Bookings status') }}</h2>
-        <div style="position:relative; height:200px;">
+        <div style="position:relative; height:330px;">
             <canvas id="chartBookingsStatus"></canvas>
         </div>
     </div>
-    <div style="padding:1rem; border:1px solid #e5e5e5; border-radius:10px; background:#fff; height:280px;">
+    <div style="padding:1rem; border:1px solid #e5e5e5; border-radius:0; background:#fff; height:420px; grid-column:1 / -1;">
         <h2 style="font-size:15px; margin:0 0 0.75rem; color:#334155;">{{ __('Revenue trend (14 days)') }}</h2>
-        <div style="position:relative; height:200px;">
+        <div style="position:relative; height:330px;">
             <canvas id="chartRevenueTrend"></canvas>
         </div>
     </div>
 </div>
 
+@php($cashPaymentTotal = $cashRevenue + $nonCashRevenue)
+
+<div class="mt-20" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+    <div style="padding:1rem 1.1rem;border-radius:0;border:1px solid #fef3c7;background:#fffbeb;">
+        <div class="text-12" style="text-transform:uppercase;letter-spacing:.06em;color:#92400e;font-weight:700;">{{ __('Cash payments') }}</div>
+        <div class="text-22 fw-700 dashboard-white-number" style="margin-top:.35rem;">{{ number_format($cashRevenue, 0) }}</div>
+    </div>
+    <div style="padding:1rem 1.1rem;border-radius:0;border:1px solid #dbeafe;background:#eff6ff;">
+        <div class="text-12" style="text-transform:uppercase;letter-spacing:.06em;color:#1d4ed8;font-weight:700;">{{ __('Other payments') }}</div>
+        <div class="text-22 fw-700 dashboard-white-number" style="margin-top:.35rem;">{{ number_format($nonCashRevenue, 0) }}</div>
+    </div>
+    <div style="padding:1rem 1.1rem;border-radius:0;border:1px solid #dcfce7;background:#f0fdf4;">
+        <div class="text-12" style="text-transform:uppercase;letter-spacing:.06em;color:#15803d;font-weight:700;">{{ __('Cash share') }}</div>
+        <div class="text-22 fw-700 dashboard-white-number" style="margin-top:.35rem;">
+            {{ $cashPaymentTotal > 0 ? number_format($cashRevenue / $cashPaymentTotal * 100, 1) : '0.0' }}%
+        </div>
+    </div>
+</div>
+
     <div class="mt-25" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;">
-        <div style="padding:1.25rem;border:1px solid #e5e5e5;border-radius:12px;background:#fff;">
+        <div style="padding:1.25rem;border:1px solid #e5e5e5;border-radius:0;background:#fff;">
             <h2 class="text-18" style="margin:0 0 .75rem;">{{ __('Revenue by payment method (confirmed)') }}</h2>
             @if ($paymentByMethod->isEmpty())
                 <p class="text-14" style="opacity:.75;">{{ __('No confirmed bookings yet.') }}</p>
@@ -190,31 +212,36 @@
                 </table>
             @endif
         </div>
-        <div style="padding:1.25rem;border:1px solid #e5e5e5;border-radius:12px;background:#fff;">
+        <div style="padding:1.25rem;border:1px solid #e5e5e5;border-radius:0;background:#fff;grid-column:span 2;">
             <div style="display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap;align-items:center;margin-bottom:.75rem;">
                 <h2 class="text-18" style="margin:0;">{{ __('Payment method analysis') }}</h2>
                 <input id="adminPaymentMonthFilter" type="month" value="{{ now()->format('Y-m') }}">
             </div>
-            <div style="position:relative;height:280px;">
+            <div style="position:relative;height:320px;">
                 <canvas id="adminPaymentMethodChart"></canvas>
             </div>
         </div>
-        <div style="padding:1.25rem;border:1px solid #e5e5e5;border-radius:12px;background:linear-gradient(135deg,#fffbeb 0%,#fff 100%);">
-            <h2 class="text-18" style="margin:0 0 .75rem;">{{ __('Cash vs other payments') }}</h2>
-            <p class="text-14" style="margin:.35rem 0;">{{ __('Cash (reception)') }}: <strong>{{ number_format($cashRevenue, 0) }}</strong></p>
-            <p class="text-14" style="margin:.35rem 0;">{{ __('Non-cash') }}: <strong>{{ number_format($nonCashRevenue, 0) }}</strong></p>
-            @php($sum = $cashRevenue + $nonCashRevenue)
-            @if ($sum > 0)
-                <p class="text-13 mt-15" style="opacity:.75;">{{ __('Cash share') }}: {{ number_format($cashRevenue / $sum * 100, 1) }}%</p>
-            @endif
-        </div>
-        <div style="padding:1.25rem;border:1px solid #e5e5e5;border-radius:12px;background:#fff;">
+        <div style="padding:1.25rem;border:1px solid #e5e5e5;border-radius:0;background:#fff;grid-column:1 / -1;">
             <h2 class="text-18" style="margin:0 0 .75rem;">{{ __('Expense analytics (30 days)') }}</h2>
-            <div style="position:relative;height:280px;">
+            <div style="position:relative;height:320px;">
                 <canvas id="adminExpenseChart"></canvas>
             </div>
         </div>
     </div>
+
+    <style>
+        @media (max-width: 991px) {
+            .dash-content-card > div[style*="repeat(2, minmax(0, 1fr))"] {
+                grid-template-columns: 1fr !important;
+            }
+            .dash-content-card > div[style*="repeat(2, minmax(0, 1fr))"] > div[style*="grid-column:1 / -1"] {
+                grid-column: auto !important;
+            }
+            .dash-content-card > div[style*="repeat(auto-fit,minmax(280px,1fr))"] > div[style*="grid-column:span 2"] {
+                grid-column: auto !important;
+            }
+        }
+    </style>
 
     <div class="mt-25">
         <h2 class="text-18" style="margin:0 0 .75rem;">{{ __('Recent system activity') }}</h2>
@@ -236,7 +263,7 @@
     </div>
 
     <div class="mt-25" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;">
-        <div>
+        <div style="padding:1.25rem;border:1px solid var(--brand-theme-border);background:var(--brand-theme-surface-card);">
             <h2 class="text-18" style="margin:0 0 .75rem;">{{ __('Quick links') }}</h2>
             <ul class="text-15" style="line-height:2;margin:0;padding-left:1.2rem;">
                 <li><a href="{{ route('admin.bookings.index') }}">{{ __('Manage bookings') }}</a></li>
@@ -250,7 +277,7 @@
                 <li><a href="{{ route('admin.contacts.index') }}">{{ __('Contact messages') }}</a></li>
             </ul>
         </div>
-        <div>
+        <div style="padding:1.25rem;border:1px solid var(--brand-theme-border);background:var(--brand-theme-surface-card);">
             <h2 class="text-18" style="margin:0 0 .75rem;">{{ __('Recent contact messages') }}</h2>
             @if ($recentContacts->isEmpty())
                 <p class="text-14" style="opacity:.75;">{{ __('No messages yet.') }}</p>
@@ -274,8 +301,9 @@
 <script>
 (function () {
   if (typeof Chart === 'undefined') return;
-  var tickColor = '#64748b';
-  var gridColor = 'rgba(148,163,184,0.2)';
+  var styles = getComputedStyle(document.documentElement);
+  var tickColor = (styles.getPropertyValue('--brand-theme-text') || '#d9e1ea').trim();
+  var gridColor = 'rgba(213,172,66,0.16)';
 
   var chartBookingsTrendEl = document.getElementById('chartBookingsTrend');
   if (chartBookingsTrendEl) new Chart(chartBookingsTrendEl, {
@@ -312,7 +340,7 @@
         data: @json($chartStatusData),
         backgroundColor: @json($chartStatusColors),
         borderWidth: 2,
-        borderColor: '#fff',
+        borderColor: '#23262b',
       }],
     },
     options: {
@@ -358,7 +386,7 @@
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { position: 'bottom' } },
+      plugins: { legend: { position: 'bottom', labels: { color: tickColor } } },
       scales: {
         x: { ticks: { color: tickColor, maxRotation: 45 }, grid: { display: false } },
         y: { beginAtZero: true, ticks: { color: tickColor }, grid: { color: gridColor } }

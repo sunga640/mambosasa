@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Site;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\RoomServiceOrder;
 use App\Services\BookingLifecycleService;
 use App\Services\PesapalService;
+use App\Services\RoomServiceOrderPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PesapalController extends Controller
 {
-    public function __construct(private BookingLifecycleService $lifecycle) {}
+    public function __construct(
+        private BookingLifecycleService $lifecycle,
+        private RoomServiceOrderPaymentService $roomServicePayments,
+    ) {}
 
     /**
      * Redirect mteja kwenye ukurasa wa malipo ya Pesapal (link inapatikana kwa API).
@@ -66,8 +71,24 @@ class PesapalController extends Controller
     {
         $reference = $request->query('OrderMerchantReference');
 
-        return redirect()->route('dashboard')
-            ->with('status', "Malipo ya booking #$reference yanashughulikiwa.");
+        if (! $reference) {
+            return redirect()
+                ->route('site.booking')
+                ->with('status', __('Payment update received. We are checking your booking status.'));
+        }
+
+        $order = RoomServiceOrder::query()
+            ->with('booking')
+            ->where('public_reference', $reference)
+            ->first();
+        if ($order) {
+            return redirect()->away($order->paymentReturnUrl())
+                ->with('status', __('Payment update received for order :ref. We are checking your payment status.', ['ref' => $reference]));
+        }
+
+        return redirect()
+            ->route('site.booking.confirmation', ['reference' => $reference])
+            ->with('status', __('Payment update received for booking :ref. We are checking your booking status.', ['ref' => $reference]));
     }
 
     // 2. IPN - Inaitwa na Pesapal Server kwa siri (Muhimu kwa kuji-confirm)
@@ -76,13 +97,21 @@ class PesapalController extends Controller
         Log::info('Pesapal IPN Received', $request->all());
 
         $reference = $request->input('OrderMerchantReference');
-        $status = $request->input('Status'); // Pesapal v3 inatuma Status hapa
+        $status = strtoupper((string) $request->input('Status')); // Pesapal v3 inatuma Status hapa
 
         $booking = Booking::where('public_reference', $reference)->first();
+        $order = RoomServiceOrder::query()->with('bookingMethod')->where('public_reference', $reference)->first();
 
-        if ($booking && $status === 'COMPLETED') {
-            // Hapa ndipo system inaji-confirm yenyewe na kurekodi Revenue
-            $this->lifecycle->handlePaymentConfirmed($booking);
+        if ($booking && $booking->status === BookingStatus::PendingPayment && $status === 'COMPLETED') {
+            // Hapa ndipo system inaji-confirm yenyewe, ina-activate booking, na kutuma credentials.
+            $this->lifecycle->confirmPayment($booking);
+        }
+
+        if ($order && $status === 'COMPLETED') {
+            $method = $order->bookingMethod;
+            if ($method) {
+                $this->roomServicePayments->markPaid($order, $method, (string) $request->input('OrderTrackingId'));
+            }
         }
 
         return response()->json(['status' => 'OK']);

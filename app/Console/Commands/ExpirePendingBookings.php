@@ -36,9 +36,12 @@ class ExpirePendingBookings extends Command
 
         $guestRoleId = Role::query()->where('slug', Role::GUEST_SLUG)->value('id');
         if ($guestRoleId) {
+            $portalEmail = config('hotel.guest_portal_user_email');
             $deletedGuests = User::query()
                 ->where('role_id', $guestRoleId)
                 ->doesntHave('bookings')
+                ->doesntHave('roomServiceOrders')
+                ->when(filled($portalEmail), fn ($query) => $query->where('email', '!=', $portalEmail))
                 ->delete();
             if ($deletedGuests > 0) {
                 $this->info("Deleted {$deletedGuests} orphan guest account(s).");

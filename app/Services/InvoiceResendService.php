@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Invoice;
+use App\Support\GuestEmailTemplateManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -11,6 +12,7 @@ final class InvoiceResendService
 {
     public function __construct(
         private SmsService $sms,
+        private GuestEmailTemplateManager $guestEmailTemplates,
     ) {}
 
     public function resend(Booking $booking): void
@@ -22,18 +24,19 @@ final class InvoiceResendService
         }
 
         $invoiceUrl = $invoice->publicUrl();
+        $emailTemplate = $this->guestEmailTemplates->render('invoice_ready', $booking, $invoice);
 
-        try {
-            Mail::send('emails.booking-invoice', [
-                'booking' => $booking,
-                'invoice' => $invoice,
-                'invoiceUrl' => $invoiceUrl,
-            ], function ($mail) use ($booking, $invoice): void {
-                $mail->to($booking->email)
-                    ->subject(__('Invoice :num — :ref', ['num' => $invoice->number, 'ref' => $booking->public_reference]));
-            });
-        } catch (\Throwable $e) {
-            Log::error('Invoice resend mail failed: '.$e->getMessage());
+        if ($emailTemplate['enabled']) {
+            try {
+                Mail::send('emails.guest-template', [
+                    'emailTemplate' => $emailTemplate,
+                ], function ($mail) use ($booking, $emailTemplate): void {
+                    $mail->to($booking->email)
+                        ->subject($emailTemplate['subject']);
+                });
+            } catch (\Throwable $e) {
+                Log::error('Invoice resend mail failed: '.$e->getMessage());
+            }
         }
 
         $smsBody = __('Your invoice :num: :url', ['num' => $invoice->number, 'url' => $invoiceUrl]);

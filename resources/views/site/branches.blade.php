@@ -12,7 +12,7 @@
                 <div class="col-auto">
                     <div data-split="lines" data-anim-child="split-lines delay-3" class="pageHero__content text-center">
                         <h1 class="pageHero__title text-white">{{ __('Our properties') }}</h1>
-                        <p class="pageHero__text text-white">{{ __('Active hotel locations you can book. Room counts and contacts come from your live system data.') }}</p>
+                        <p class="pageHero__text text-white">{{ __('Explore the Mambosasa locations welcoming guests with comfortable stays, attentive service, and convenient access to key city destinations.') }}</p>
                     </div>
                 </div>
             </div>

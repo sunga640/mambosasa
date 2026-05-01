@@ -4,7 +4,7 @@
 
 @section('content')
     <h1 class="text-30">{{ __('Contact messages') }}</h1>
-    <p class="text-15 mt-10" style="opacity:.85;">{{ __('Submissions from the public contact form (same list as admin).') }}</p>
+    <p class="text-15 mt-10" style="opacity:.85;">{{ __('Public contact form submissions for your branch scope.') }}</p>
     <form method="GET" action="{{ route('reception.contacts.index') }}" class="form-row mt-20" style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;">
         <div style="flex:1;min-width:240px;max-width:420px;">
             <label for="q">{{ __('Advanced search') }}</label>
@@ -19,6 +19,7 @@
         <thead>
             <tr>
                 <th>{{ __('When') }}</th>
+                <th>{{ __('Branch') }}</th>
                 <th>{{ __('Name') }}</th>
                 <th>{{ __('Email') }}</th>
                 <th>{{ __('Phone') }}</th>
@@ -34,9 +35,10 @@
                 @endphp
                 <tr>
                     <td>{{ $msg->created_at?->format('Y-m-d H:i') }}</td>
+                    <td>{{ $msg->branch?->name ?? __('Unassigned') }}</td>
                     <td>{{ $msg->first_name }} {{ $msg->last_name }}</td>
                     <td><a href="mailto:{{ $msg->email }}">{{ $msg->email }}</a></td>
-                    <td>{{ $msg->phone ?: '—' }}</td>
+                    <td>{{ $msg->phone ?: '-' }}</td>
                     <td style="max-width:420px;white-space:pre-wrap;">{{ $msg->body }}</td>
                     <td style="min-width:280px;">
                         <div style="display:flex;align-items:flex-start;gap:.75rem;flex-wrap:wrap;">
@@ -65,7 +67,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6">{{ __('No messages yet.') }}</td>
+                    <td colspan="7">{{ __('No messages yet.') }}</td>
                 </tr>
             @endforelse
         </tbody>

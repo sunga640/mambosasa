@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -67,14 +68,10 @@ class AuthenticatedSessionController extends Controller
         $request->session()->forget(['site_booking_portal_booking_id', 'booking_portal_ref']);
 
         $user = auth()->user();
-        $default = route('dashboard', absolute: false);
-        if ($user?->isSuperAdmin()) {
-            $default = route('admin.dashboard', absolute: false);
-        } elseif ($user?->isReceptionStaff()) {
-            $default = route('reception.dashboard', absolute: false);
-        }
 
-        $user = auth()->user();
+        if ($user?->role?->slug === Role::GUEST_SLUG && ! $user->hasVerifiedEmail()) {
+            $user->forceFill(['email_verified_at' => Carbon::now()])->save();
+        }
 
         return redirect()->to($user->accountHomeUrl());
     }

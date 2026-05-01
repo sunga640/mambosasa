@@ -6,18 +6,11 @@ use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingMethod;
-use App\Models\Customer;
-use App\Models\Invoice;
-use App\Models\User;                    // MPYA: Kwa ajili ya kutengeneza account
 use App\Services\BookingLifecycleService;
 use App\Support\StaffScope;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;   // MPYA: Kwa ajili ya Hash::make
-use Illuminate\Support\Facades\Mail;   // MPYA: Kwa ajili ya Mail::to
-use Illuminate\Support\Str;            // MPYA: Kwa ajili ya Str::random
-use App\Mail\GuestLoginCredentialsMail; // MPYA: Kwa ajili ya Email
 
 class AdminPendingPaymentsController extends Controller
 {
@@ -66,41 +59,7 @@ class AdminPendingPaymentsController extends Controller
 
         abort_unless($booking->status === BookingStatus::PendingPayment, 400);
 
-        // 1. TENGENEZA PASSWORD YA RANDOM
-        $plainPassword = Str::random(10);
-
-        // 2. TENGENEZA USER ACCOUNT (Kama haipo)
-        // Tunatafuta kama user ana email hii tayari
-        $user = User::where('email', $booking->email)->first();
-
-        if (!$user) {
-            $user = User::create([
-                'name' => $booking->first_name . ' ' . $booking->last_name,
-                'email' => $booking->email,
-                'password' => Hash::make($plainPassword),
-            ]);
-        }
-
-        // 3. UPDATE BOOKING
-        $booking->update([
-            'status' => BookingStatus::Confirmed,
-            'confirmed_at' => now(),
-            'payment_deadline_at' => null,
-            'user_id' => $user->id, // Unganisha booking na user account
-        ]);
-
-        Customer::syncFromBooking($booking->fresh());
-        Invoice::createForBooking($booking->fresh());
-        $lifecycle->handlePaymentConfirmed($booking->fresh());
-
-        // 4. TUMA EMAIL
-        // Hapa tunatuma password aliyotengenezewa mteja kwenye email yake
-        try {
-            Mail::to($booking->email)->send(new GuestLoginCredentialsMail($booking, $plainPassword));
-        } catch (\Exception $e) {
-            // Hi ni option: Kama email ikifeli kutumwa, system isicrash
-            // Unaweza kulog error hapa ikibidi
-        }
+        $lifecycle->confirmPayment($booking);
 
         return back()->with('status', __('Payment confirmed. Login credentials sent to guest email.'));
     }

@@ -3,6 +3,28 @@
 @section('title', __('Rooms'))
 
 @section('content')
+    <style>
+        .room-usage-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 31px;
+            padding: .22rem .62rem;
+            border: 1px solid rgba(125, 211, 252, .24);
+            background: rgba(56, 189, 248, .12);
+            color: #e0f2fe;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: .74rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .room-usage-toggle-btn:hover {
+            border-color: rgba(125, 211, 252, .42);
+            background: rgba(56, 189, 248, .2);
+            color: #f8fdff;
+        }
+    </style>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
         <h1 class="text-30">
             @if (!empty($currentRoomTypeName))
@@ -58,7 +80,7 @@
                         @endif
                         <form action="{{ route('admin.rooms.toggle-in-use', $room) }}" method="POST" style="display:inline;margin-left:.5rem;">
                             @csrf
-                            <button type="submit" class="text-13" style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:.2rem .45rem;cursor:pointer;" title="{{ __('Toggle manual in-use flag') }}">
+                            <button type="submit" class="room-usage-toggle-btn" title="{{ __('Toggle manual in-use flag') }}">
                                 {{ $room->force_in_use ? __('Unforce') : __('Force') }}
                             </button>
                         </form>

@@ -56,7 +56,7 @@ class ReceptionHotelServiceController extends Controller
     {
         return view($this->panelView('create'), [
             'branches' => $this->branchesForForm(),
-            'mediaAssets' => MediaAsset::query()->latest()->limit(100)->get(),
+            'mediaAssets' => MediaAsset::query()->latest()->get(),
         ]);
     }
 
@@ -81,7 +81,7 @@ class ReceptionHotelServiceController extends Controller
         return view($this->panelView('edit'), [
             'service' => $hotelService,
             'branches' => $this->branchesForForm(),
-            'mediaAssets' => MediaAsset::query()->latest()->limit(100)->get(),
+            'mediaAssets' => MediaAsset::query()->latest()->get(),
         ]);
     }
 

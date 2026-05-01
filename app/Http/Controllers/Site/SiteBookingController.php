@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Site\StoreSiteBookingRequest;
 use App\Models\Booking;
 use App\Models\BookingMethod;
+use App\Models\HotelService;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\SystemSetting;
@@ -31,7 +32,7 @@ class SiteBookingController extends Controller
 
         $roomTypes = RoomType::query()
             ->where('is_active', true)
-            ->with(['branch', 'rooms'])
+            ->with(['branch', 'rooms.images'])
             ->orderBy('name')
             ->get();
 
@@ -60,6 +61,12 @@ class SiteBookingController extends Controller
             'selectedType' => $selectedType,
             'heroUrl' => $bookingHeroUrl,
             'roomPrices' => $roomPrices,
+            'bookingHotelServices' => HotelService::query()
+                ->listedForGuests($selectedType?->hotel_branch_id)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->limit(6)
+                ->get(),
         ]);
     }
 

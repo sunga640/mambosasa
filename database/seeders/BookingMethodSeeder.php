@@ -13,6 +13,7 @@ class BookingMethodSeeder extends Seeder
             ['name' => 'Pay on arrive', 'slug' => 'pay_later', 'code' => 'cash', 'method_type' => 'offline', 'sort_order' => 10],
             ['name' => 'Pesapal', 'slug' => 'pesapal', 'code' => 'pesapal', 'method_type' => 'online', 'sort_order' => 20],
             ['name' => 'Lipa kwa simu (M-Pesa)', 'slug' => 'mpesa', 'code' => 'mpesa', 'method_type' => 'online', 'sort_order' => 30],
+            ['name' => 'Lipa kwa simu (Tigo Pesa)', 'slug' => 'tigopesa', 'code' => 'tigopesa', 'method_type' => 'online', 'sort_order' => 40],
         ];
 
         foreach ($rows as $row) {

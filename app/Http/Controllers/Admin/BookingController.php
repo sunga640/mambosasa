@@ -71,12 +71,13 @@ class BookingController extends Controller
         $data = ['status' => $newStatus];
         if ($newStatus === BookingStatus::Confirmed && $prev !== BookingStatus::Confirmed) {
             $data['confirmed_at'] = now();
+            $data['payment_deadline_at'] = null;
         }
 
         $booking->update($data);
 
         if ($newStatus === BookingStatus::Confirmed && $prev !== BookingStatus::Confirmed) {
-            $lifecycle->handlePaymentConfirmed($booking->fresh());
+            $lifecycle->confirmPayment($booking->fresh());
         }
 
         return redirect()

@@ -11,9 +11,11 @@ use App\Models\HotelBranch;
 use App\Models\Room;
 use App\Models\RoomMaintenance;
 use App\Models\User;
+use App\Support\StaffScope;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -22,41 +24,43 @@ class ReportController extends Controller
 {
     private const TYPES = ['summary', 'bookings', 'customers', 'rooms', 'maintenance', 'full'];
 
-   public function index(Request $request): View
+    public function index(Request $request): View
     {
-        // 1. Maandalizi ya Tarehe (Filter)
         $from = $request->date('from') ?? now()->startOfMonth();
         $to = $request->date('to') ?? now();
+        $data = $this->overviewDashboard($from, $to);
 
-        // 2. Revenue Today
+        return view('admin.reports.index', $data);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function overviewDashboard(Carbon $from, Carbon $to): array
+    {
         $revenueToday = (float) Booking::where('status', BookingStatus::Confirmed)
             ->whereDate('created_at', now())
             ->sum('total_amount');
 
-        // 3. Revenue This Month
         $revenueThisMonth = (float) Booking::where('status', BookingStatus::Confirmed)
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('total_amount');
 
-        // 4. Revenue Last Month (Kwa ajili ya Comparison)
         $revenueLastMonth = (float) Booking::where('status', BookingStatus::Confirmed)
             ->whereMonth('created_at', now()->subMonth()->month)
             ->whereYear('created_at', now()->subMonth()->year)
             ->sum('total_amount');
 
-        // 5. Revenue This Year
         $revenueYear = (float) Booking::where('status', BookingStatus::Confirmed)
             ->whereYear('created_at', now()->year)
             ->sum('total_amount');
 
-        // 6. Mahesabu ya Ongezeko (Percentage Change)
         $percentageChange = 0;
         if ($revenueLastMonth > 0) {
             $percentageChange = (($revenueThisMonth - $revenueLastMonth) / $revenueLastMonth) * 100;
         }
 
-        // 7. Revenue Trend (Line Chart - inatumia Filter ya Tarehe)
         $revenueTrend = Booking::where('status', BookingStatus::Confirmed)
             ->whereBetween('created_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
             ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
@@ -64,7 +68,6 @@ class ReportController extends Controller
             ->orderBy('date')
             ->get();
 
-        // 8. Analytics za Malipo (Cash vs Digital)
         $paymentByMethod = Booking::query()
             ->where('status', BookingStatus::Confirmed)
             ->join('booking_methods', 'bookings.booking_method_id', '=', 'booking_methods.id')
@@ -80,14 +83,9 @@ class ReportController extends Controller
             ->whereDoesntHave('method', fn ($m) => $m->where('slug', 'cash'))
             ->sum('total_amount');
 
-        // 9. Gharama za Maintenance (Total)
         $maintenanceExpenses = (float) RoomMaintenance::sum('expenses');
 
-        // --- MABORESHO MAPYA: CHARTS ZA CHINI ---
-
-        // 10. BOOKED VS AVAILABLE ANALYSIS (Hali ya leo)
         $totalRooms = Room::count();
-        // Tunatafuta vyumba ambavyo vimechukuliwa (Check-in <= leo na Check-out > leo)
         $bookedRoomsCount = Booking::where('status', BookingStatus::Confirmed)
             ->whereDate('check_in', '<=', now())
             ->whereDate('check_out', '>', now())
@@ -96,19 +94,16 @@ class ReportController extends Controller
 
         $availableRoomsCount = max(0, $totalRooms - $bookedRoomsCount);
 
-        // 11. MAINTENANCE ANALYTICS (Mgawanyo kwa Status)
         $maintenanceStats = RoomMaintenance::selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->get();
 
-        // 12. ROOM DISTRIBUTION (Vyumba kwa kila Tawi/Branch)
         $roomDistribution = Room::join('hotel_branches', 'rooms.hotel_branch_id', '=', 'hotel_branches.id')
             ->selectRaw('hotel_branches.name as branch_name, count(*) as total')
             ->groupBy('branch_name')
             ->get();
 
-        // 13. Kurudisha View na Variable zote
-        return view('admin.reports.index', compact(
+        return compact(
             'revenueToday',
             'revenueThisMonth',
             'revenueYear',
@@ -125,7 +120,7 @@ class ReportController extends Controller
             'availableRoomsCount',
             'maintenanceStats',
             'roomDistribution'
-        ));
+        );
     }
 
 public function show(Request $request, string $type): View
@@ -175,16 +170,43 @@ public function show(Request $request, string $type): View
         return view('admin.reports.show', $this->maintenanceDashboard($from, $to, $exportUrl));
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request): StreamedResponse|Response
     {
         $type = $request->query('type', 'summary');
         abort_unless(in_array($type, self::TYPES, true), 404);
 
         $from = $request->date('from');
         $to = $request->date('to');
+        $format = strtolower((string) $request->query('format', 'csv'));
         $statusFilter = $request->query('status');
         if ($statusFilter !== null && $statusFilter !== '' && ! BookingStatus::tryFrom((string) $statusFilter)) {
             $statusFilter = null;
+        }
+
+        if ($format === 'pdf') {
+            if ($request->query('dashboard') === 'overview') {
+                $pdfFrom = $from ?? now()->startOfMonth();
+                $pdfTo = $to ?? now();
+
+                return response()->view('admin.reports.pdf-overview', $this->overviewDashboard($pdfFrom, $pdfTo));
+            }
+
+            $pdfFrom = $from ?? now()->subDays(30);
+            $pdfTo = $to ?? now();
+            if ($pdfFrom->gt($pdfTo)) {
+                [$pdfFrom, $pdfTo] = [$pdfTo->copy(), $pdfFrom->copy()];
+            }
+
+            $reportData = match ($type) {
+                'full' => $this->fullDashboard($pdfFrom, $pdfTo, ''),
+                'summary' => $this->summaryDashboard($pdfFrom, $pdfTo, ''),
+                'bookings' => $this->bookingsDashboard($pdfFrom, $pdfTo, $statusFilter, ''),
+                'customers' => $this->customersDashboard($pdfFrom, $pdfTo, ''),
+                'rooms' => $this->roomsDashboard($pdfFrom, $pdfTo, ''),
+                default => $this->maintenanceDashboard($pdfFrom, $pdfTo, ''),
+            };
+
+            return response()->view('admin.reports.pdf', $reportData);
         }
 
         $filename = 'hotel-report-'.now()->format('Y-m-d-His').'.csv';
@@ -280,7 +302,9 @@ public function show(Request $request, string $type): View
                 fputcsv($out, ['Rooms', (string) Room::query()->count()]);
                 fputcsv($out, ['Branches', (string) HotelBranch::query()->count()]);
                 fputcsv($out, ['Users', (string) User::query()->count()]);
-                fputcsv($out, ['Contact messages', (string) ContactMessage::query()->count()]);
+                $contactMessages = ContactMessage::query();
+                app(StaffScope::class)->filterContactMessagesByBranch($contactMessages);
+                fputcsv($out, ['Contact messages', (string) $contactMessages->count()]);
                 fputcsv($out, ['Maintenance records', (string) RoomMaintenance::query()->count()]);
             }
 

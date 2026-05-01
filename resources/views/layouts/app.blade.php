@@ -17,11 +17,11 @@
         .app-nav a { color: #F9DABA; text-decoration: none; margin-right: 1rem; }
         .app-main { padding: 2rem 1.5rem; max-width: 960px; margin: 0 auto; }
         .app-head { background: #fff; padding: 1rem 1.5rem; border-bottom: 1px solid #e8e8e8; margin-bottom: 1.5rem; }
-        .flatpickr-calendar { border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 12px 30px rgba(0,0,0,.14); font-family: inherit; }
+        .flatpickr-calendar { border-radius: 0; border: 1px solid #d6dde7; box-shadow: 0 18px 42px rgba(0,0,0,.14); font-family: inherit; background:linear-gradient(180deg,#fff 0%,#f8fafc 100%); }
         .flatpickr-months .flatpickr-month { height: 46px; }
         .flatpickr-current-month { font-size: 1rem; padding-top: 8px; }
         .flatpickr-prev-month svg, .flatpickr-next-month svg { width: 14px !important; height: 14px !important; }
-        .flatpickr-day { border-radius: 8px; }
+        .flatpickr-day { border-radius: 0; }
         .flatpickr-day.today { border-color: #0f172a; }
         .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange { background: #1d4ed8; border-color: #1d4ed8; }
     </style>

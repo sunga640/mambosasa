@@ -4,15 +4,15 @@
 
 @section('content')
 @php
-    $aboutHeroSlides = $homeHeroSlideUrls ?? [];
+    $aboutHeroSlides = array_slice($siteSettings->aboutGalleryUrls(), 0, 2);
     if ($aboutHeroSlides === []) {
         $aboutHeroSlides = [asset('img/pageHero/4.png'), asset('img/pageHero/1.png')];
     }
     $aboutSlide = fn (int $i): string => $aboutHeroSlides[$i % count($aboutHeroSlides)];
 @endphp
-
+    <br><br><br>
     <!-- SECTION 1: HERO INTRO (Long Titles & Advanced Typography) -->
-    <section class="layout-pt-lg layout-pb-md bg-white">
+    <section class="layout-pt-lg layout-pb-md bg-white site-page-top-safe">
       <div data-anim-wrap class="container">
         <div class="row justify-center text-center">
           <div class="col-xl-10 col-lg-11">
@@ -133,25 +133,25 @@
                 {{ __('What We Offer') }}
             </span>
             <h2 style="font-size: clamp(30px, 4vw, 44px); font-weight: 800; color: #051039; margin-top: 14px; line-height: 1.2;">
-                {{ __('Hotel Services Available') }}
+                {{ __('Signature Services For Your Stay') }}
             </h2>
             <p style="max-width: 720px; margin: 12px auto 0; font-size: 16px; color: #64748b; line-height: 1.7;">
-                {{ __('Below is the current list of services uploaded in the system and available for guests.') }}
+                {{ __('Enjoy a selection of hotel services designed to add convenience, comfort, and a more memorable experience throughout your visit.') }}
             </p>
         </div>
 
         @if(($aboutHotelServices ?? collect())->isEmpty())
             <div style="padding: 1rem 1.2rem; border: 1px dashed #94a3b8; border-radius: 12px; background: #fff; text-align: center; color: #475569;">
-                {{ __('No hotel services uploaded yet.') }}
+                {{ __('Our guest services collection is being refreshed. Please contact the front desk for the latest available experiences and in-house assistance.') }}
             </div>
         @else
             <div class="row y-gap-20">
                 @foreach($aboutHotelServices as $svc)
                     <div class="col-lg-4 col-md-6">
-                        <article style="height:100%;display:flex;flex-direction:column;border:1px solid #e2e8f0;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);">
+                        <article class="about-service-card" style="height:100%;display:flex;flex-direction:column;border:1px solid #e2e8f0;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);">
                             @if($svc->imageUrl())
                                 <div style="height:180px;overflow:hidden;">
-                                    <img src="{{ $svc->imageUrl() }}" alt="{{ $svc->name }}" style="width:100%;height:100%;object-fit:cover;">
+                                    <img src="{{ $svc->imageUrl() }}" alt="{{ $svc->name }}" class="about-service-card__image" style="width:100%;height:100%;object-fit:cover;">
                                 </div>
                             @endif
                             <div style="padding:1rem 1rem 1.15rem;">
@@ -163,7 +163,7 @@
                                     @endif
                                 </p>
                                 <p style="font-size:.92rem;line-height:1.6;color:#475569;margin:0 0 .8rem;">
-                                    {{ $svc->description ?: __('Service details available at booking time.') }}
+                                    {{ $svc->description ?: __('Service information is available from our reservations and front office team.') }}
                                 </p>
                                 @if((float)$svc->price > 0)
                                     <div style="font-weight:800;color:#0f766e;">TZS {{ number_format((float)$svc->price, 0) }}</div>
@@ -185,13 +185,31 @@
 
     <!-- STYLES -->
     <style>
+        .site-page-top-safe {
+            padding-top: 11rem !important;
+        }
+        @media (max-width: 767px) {
+            .site-page-top-safe {
+                padding-top: 8.6rem !important;
+            }
+        }
+        .layout-pt-lg img,
+        .layout-pb-lg img,
+        .layout-pb-lg article,
+        .layout-pb-lg div[style*="border-radius"],
+        .layout-pb-md div[style*="border-radius"],
+        .layout-pb-lg a[style*="border-radius"],
+        .layout-pb-lg span[style*="border-radius"],
+        .layout-pb-md span[style*="border-radius"] {
+            border-radius: 0 !important;
+        }
         .btn-advanced-navy {
             display: inline-flex;
             align-items: center;
             background: #051039;
             color: white !important;
             padding: 10px 10px 10px 30px;
-            border-radius: 100px;
+            border-radius: 0;
             font-weight: 700;
             font-size: 15px;
             text-decoration: none;
@@ -200,7 +218,7 @@
         .btn-advanced-navy:hover { background: #2563eb; transform: translateY(-3px); }
         .btn-advanced-navy .icon-circle {
             width: 40px; height: 40px; background: rgba(255,255,255,0.15);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 20px;
+            border-radius: 0; display: flex; align-items: center; justify-content: center; margin-left: 20px;
         }
         .circle-card-advanced {
             position: relative;
@@ -229,11 +247,26 @@
         }
         .direction-btn-circle.sm { width: 55px; height: 55px; font-size: 18px; }
         .circle-card-advanced:hover .direction-btn-circle { background: white; color: #2563eb; transform: rotate(45deg); }
-        .badge-blue { background: #2563eb; color: white; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 800; }
-        .badge-white { background: white; color: #051039; padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 800; }
+        .badge-blue { background: #2563eb; color: white; padding: 4px 12px; border-radius: 0; font-size: 10px; font-weight: 800; }
+        .badge-white { background: white; color: #051039; padding: 4px 12px; border-radius: 0; font-size: 10px; font-weight: 800; }
         .hover-main:hover { color: #2563eb !important; }
         .imageGrid__item:hover img { transform: scale(1.1); }
         .imageGrid__item:hover .hover-overlay { opacity: 1 !important; }
+        .about-service-card {
+            border-radius: 0 !important;
+            transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+        }
+        .about-service-card__image {
+            transition: transform .4s ease;
+        }
+        .about-service-card:hover {
+            transform: translateY(-8px);
+            border-color: #2563eb !important;
+            box-shadow: 0 18px 40px rgba(37,99,235,.12) !important;
+        }
+        .about-service-card:hover .about-service-card__image {
+            transform: scale(1.06);
+        }
     </style>
 
 @endsection

@@ -7,28 +7,33 @@
     @include('partials.favicon')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/vendors.css') }}">
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
     <link rel="stylesheet" href="{{ asset('css/account-bridge.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    @include('partials.footer-theme-overrides')
     <title>@yield('title', __('Admin')) — {{ $dashboardSettings->hotelDisplayName() }}</title>
     <style>
         [x-cloak] { display: none !important; }
         :root {
-            --dash-body-bg: #eef0f3;
+            --dash-body-bg: #f5efe5;
             --dash-header-h: 68px;
             --dash-crumb-h: 46px;
             --dash-footer-h: 56px;
             --dash-sidebar-w: 372px;
+            --dash-brand-forest: #17352f;
+            --dash-brand-gold: #b8955d;
+            --dash-brand-cream: #f7f2e8;
         }
-        .dash-body { margin: 0; min-height: 100vh; height: 100vh; overflow: hidden; background: var(--dash-body-bg); font-family: 'Jost', system-ui, sans-serif; }
+        .dash-body { margin: 0; min-height: 100vh; height: 100vh; overflow: hidden; background: var(--dash-body-bg); font-family: 'Manrope', system-ui, sans-serif; font-size: 14px; }
         .dash-root { min-height: 100vh; height: 100vh; }
         .dash-header-bar {
             position: fixed; top: 0; left: 0; right: 0; height: var(--dash-header-h);
-            background: #fff; border-bottom: 1px solid #e0e0e0; z-index: 300;
+            background: rgba(255,255,255,0.96); border-bottom: 1px solid rgba(23,53,47,0.08); z-index: 300;
             display: flex; align-items: center; gap: 0.75rem; padding: 0 1rem; box-sizing: border-box;
+            box-shadow: 0 8px 24px rgba(11,29,35,0.04);
         }
         .dash-menu-btn {
             display: none; align-items: center; justify-content: center; width: 40px; height: 40px;
@@ -36,9 +41,23 @@
         }
         .dash-menu-btn:hover { border-color: #bbb; }
         .dash-header-bar__brand {
-            font-size: 1.125rem; font-weight: 700; color: #111; text-decoration: none; flex-shrink: 0;
+            font-size: 1.125rem; font-weight: 700; color: var(--dash-brand-forest); text-decoration: none; flex-shrink: 1; min-width: 0; max-width: min(44vw, 720px);
         }
-        .dash-header-bar__brand:hover { color: #c41e3a; }
+        .dash-header-bar__brand:hover { color: var(--dash-brand-gold); }
+        .dash-header-brand-wrap { display:inline-flex; align-items:center; gap:.75rem; min-width:0; }
+        .dash-header-brand-wrap img { width:42px; height:42px; object-fit:contain; flex-shrink:0; }
+        .dash-header-brand-text { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .dash-header-logout-btn {
+            display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px;
+            border: 1px solid #ddd; border-radius: 10px; color: #111; text-decoration: none; background: #fff;
+            cursor: pointer; padding: 0;
+        }
+        .dash-header-logout-btn:hover { border-color: #bbb; background: #fafafa; }
+        .dash-header-branch-form { margin-left: .5rem; }
+        .dash-header-branch-select {
+            min-width: 104px; max-width: 180px; font-size: 12px; padding: 8px 30px 8px 10px; border-radius: 10px;
+            border: 1px solid #d7dee7; background: #fff; color: #111827; font-family: inherit;
+        }
         .dash-header-search {
             flex: 1; min-width: 0; max-width: 520px; margin: 0 auto;
             display: flex; align-items: center; gap: 0.35rem;
@@ -97,7 +116,7 @@
         .dash-user-menu__panel form button:hover { border-color: #111; }
         .dash-breadcrumb-bar {
             position: fixed; top: var(--dash-header-h); left: 0; right: 0; height: var(--dash-crumb-h);
-            background: #e3e5e8; border-bottom: 1px solid #d0d4d8; z-index: 290;
+            background: #efe7d8; border-bottom: 1px solid rgba(23,53,47,0.08); z-index: 290;
             display: flex; align-items: center; padding: 0 1.25rem; font-size: 0.875rem; color: #444; box-sizing: border-box;
         }
         .dash-breadcrumb-bar a { color: #333; text-decoration: none; }
@@ -119,34 +138,50 @@
             padding: 1rem; box-sizing: border-box; min-height: 0; display: flex; flex-direction: column;
         }
         .dash-sidebar-card {
-            background: #fff; border-radius: 12px; border: 1px solid #e5e5e5;
+            background: rgba(255,255,255,0.92); border-radius: 12px; border: 1px solid rgba(23,53,47,0.08);
             box-shadow: 0 1px 2px rgba(0,0,0,.04); flex: 1; min-height: 0; display: flex; flex-direction: column;
         }
         .dash-nav-heading {
             font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; color: #777;
-            padding: 0.65rem 1rem 0.3rem; background: #f3f4f6; border-bottom: 1px solid #ececec;
+            padding: 0.65rem 1rem 0.3rem; background: var(--dash-brand-cream); border-bottom: 1px solid rgba(23,53,47,0.06);
             text-transform: uppercase;
         }
         .dash-nav-heading:first-child { border-radius: 12px 12px 0 0; }
         .dash-sidebar-nav-scroll { flex: 1; overflow-y: auto; min-height: 0; padding: 0.35rem 0 0.85rem; }
         .dash-nav-link {
             display: flex; align-items: center; gap: 0.65rem; padding: 0.55rem 1rem; margin: 0.12rem 0.5rem;
-            color: #333; text-decoration: none; font-size: 0.98rem; border-radius: 8px;
+            color: #333; text-decoration: none; font-size: 0.9rem; border-radius: 0;
         }
         .dash-nav-link:hover { background: #f4f4f5; }
-        .dash-nav-link.is-active { color: #c41e3a; font-weight: 600; background: #fde8ec; }
+        .dash-nav-link.is-active { color: var(--dash-brand-forest); font-weight: 600; background: rgba(184,149,93,0.18); }
         .dash-nav-ico { width: 20px; height: 20px; flex-shrink: 0; opacity: 0.75; }
         .dash-nav-link.is-active .dash-nav-ico { opacity: 1; stroke: #c41e3a; }
         .dash-nav-link--sub { font-size: 0.92rem; padding-left: 2.25rem; opacity: 0.95; }
         .dash-content-outer {
             flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column;
-            background: var(--dash-body-bg); padding: 1rem 1rem 0; box-sizing: border-box;
+            background: var(--dash-body-bg); padding: 1rem 1rem 0; box-sizing: border-box; position: relative;
         }
         .dash-content-scroll { flex: 1; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
         .dash-content-card {
-            background: #fff; border-radius: 12px; border: 1px solid #e5e5e5;
+            background: rgba(255,255,255,0.94); border-radius: 12px; border: 1px solid rgba(23,53,47,0.08);
             padding: 1.5rem 1.75rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); min-height: min-content; overflow-x: auto;
         }
+        .dash-page-preloader {
+            position: absolute;
+            inset: 1rem 1rem 0 0;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(247, 242, 232, 0.92);
+            backdrop-filter: blur(4px);
+            transition: opacity 0.28s ease, visibility 0.28s ease;
+        }
+        .dash-page-preloader.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .dash-page-preloader__panel { display: grid; gap: .85rem; justify-items: center; text-align: center; }
+        .dash-page-preloader__spinner { width: 2.8rem; height: 2.8rem; border: 2px solid rgba(23,53,47,.14); border-top-color: #17352f; animation: dash-preloader-spin .9s linear infinite; }
+        .dash-page-preloader__label { color: #17352f; font-size: .76rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+        @keyframes dash-preloader-spin { to { transform: rotate(360deg); } }
         .dash-site-footer {
             position: fixed; bottom: 0; left: 0; right: 0; height: var(--dash-footer-h);
             background: #fff; border-top: 1px solid #dadce0; display: flex; align-items: center; justify-content: center;
@@ -206,14 +241,55 @@
         .report-hub-card__title { font-weight: 700; }
         .report-hub-card__meta { font-size: 0.85rem; color: #666; }
         .dash-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem; font-family: inherit; cursor: pointer; text-decoration: none; border: none; }
-        .dash-btn--primary { background: #111; color: #fff; }
-        .dash-btn--primary:hover { background: #333; color: #fff; }
+        .dash-content-card [style*="font-size:24px; font-weight:800"],
+        .dash-content-card [style*="font-size:26px; font-weight:800"],
+        .dash-content-card [style*="font-size:28px; font-weight:600"],
+        .dash-content-card .work-value,
+        .dash-content-card .k-stat strong { color: #ffffff !important; }
+        .dash-btn--primary { background: var(--dash-brand-forest); color: #fff; }
+        .dash-body,
+        .dash-content-card { font-size: 13px !important; }
+        .dash-header-bar__brand { font-size: 1rem !important; }
+        .dash-breadcrumb-bar { font-size: 0.8rem !important; }
+        .dash-nav-link,
+        .dash-nav-link--sub,
+        .dash-user-menu__panel a,
+        .dash-user-menu__panel form button,
+        .dash-header-search input[type="search"] { font-size: 0.82rem !important; }
+        .dash-btn { font-size: 0.82rem !important; padding: 0.45rem 0.85rem !important; }
+        .dash-content-card { padding: 1.2rem 1.35rem !important; }
+        .admin-table th, .admin-table td { font-size: 0.84rem !important; padding: 0.58rem 0.45rem !important; }
+        .dash-content-card .text-30 { font-size: 1.55rem !important; }
+        .dash-content-card .text-24 { font-size: 1.25rem !important; }
+        .dash-content-card .text-20 { font-size: 1.08rem !important; }
+        .dash-content-card .text-18 { font-size: 0.98rem !important; }
+        .dash-content-card .text-15 { font-size: 0.84rem !important; }
+        .dash-content-card .text-14 { font-size: 0.8rem !important; }
+        .dash-content-card .text-13,
+        .dash-content-card .text-12 { font-size: 0.75rem !important; }
+        .dash-content-card [style*="font-size:28px"] { font-size: 1.45rem !important; }
+        .dash-content-card [style*="font-size:26px"] { font-size: 1.32rem !important; }
+        .dash-content-card [style*="font-size:24px"] { font-size: 1.2rem !important; }
+        .dash-content-card [style*="font-size:22px"] { font-size: 1.08rem !important; }
+        .dash-content-card [style*="font-size:16px"] { font-size: 0.88rem !important; }
+        .dash-content-card [style*="font-size:15px"] { font-size: 0.84rem !important; }
+        .dash-content-card [style*="font-size:14px"] { font-size: 0.8rem !important; }
+        .dash-btn--primary:hover { background: #214b43; color: #fff; }
+        .dash-content-card div[style*="border-radius"],
+        .dash-content-card a[style*="border-radius"],
+        .dash-content-card button[style*="border-radius"],
+        .dash-content-card img[style*="border-radius"],
+        .dash-content-card video[style*="border-radius"],
+        .dash-content-card label[style*="border-radius"],
+        .dash-content-card span[style*="border-radius"] {
+            border-radius: 10px !important;
+        }
         .dash-btn--ghost { background: #fff; color: #333; border: 1px solid #ccc; }
         .dash-btn--ghost:hover { border-color: #111; }
         .flatpickr-calendar {
-            border-radius: 14px;
-            border: 1px solid rgba(226, 232, 240, 0.95);
-            box-shadow: 0 14px 36px rgba(18, 34, 35, 0.12);
+            border-radius: 0;
+            border: 1px solid rgba(214, 221, 231, 0.98);
+            box-shadow: 0 18px 42px rgba(18, 34, 35, 0.14);
             font-family: inherit;
             overflow: hidden;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -225,7 +301,7 @@
         .flatpickr-months .flatpickr-month { height: 46px; }
         .flatpickr-current-month { font-size: 1rem; padding-top: 8px; }
         .flatpickr-prev-month svg, .flatpickr-next-month svg { width: 14px !important; height: 14px !important; }
-        .flatpickr-day { border-radius: 8px; }
+        .flatpickr-day { border-radius: 0; }
         .flatpickr-day.today { border-color: #0f172a; }
         .flatpickr-day.flatpickr-disabled,
         .flatpickr-day.flatpickr-disabled:hover {
@@ -328,14 +404,61 @@
         display: block;
     }
 }
+        :root {
+            --dash-body-bg: #1a1c1f !important;
+            --dash-crumb-h: 0px !important;
+            --dash-footer-h: 0px !important;
+            --dash-sidebar-w: 280px !important;
+            --dash-brand-forest: #38bdf8 !important;
+            --dash-brand-gold: #7dd3fc !important;
+            --dash-brand-cream: #23262b !important;
+        }
+        .dash-breadcrumb-bar { display:none !important; }
+        .dash-header-bar,
+        .dash-breadcrumb-bar { background:#20242a !important; border-color:rgba(125,211,252,.12) !important; color:#cbd5e1 !important; }
+        .dash-header-bar__brand,
+        .dash-breadcrumb-bar a { color:#7dd3fc !important; }
+        .dash-menu-btn,
+        .dash-mobile-search-btn,
+        .dash-header-alert-btn,
+        .dash-theme-btn { background:#23262b !important; color:#e5e7eb !important; border-color:rgba(125,211,252,.18) !important; border-radius:12px !important; }
+        .dash-header-search { background:#23262b !important; border-color:rgba(125,211,252,.18) !important; border-radius:12px !important; }
+        .dash-header-search input[type="search"] { color:#e5e7eb !important; }
+        .dash-sidebar-card,
+        .dash-content-card { background:#23262b !important; border:1px solid rgba(125,211,252,.14) !important; border-radius:12px !important; color:#e5e7eb !important; }
+        .dash-sidebar-outer { padding:.75rem !important; }
+        .dash-nav-heading { display:none !important; }
+        .dash-sidebar-nav-scroll { padding:.25rem 0 .45rem !important; }
+        .dash-nav-link { color:#e5e7eb !important; border:1px solid rgba(125,211,252,.12) !important; background:#2b3038 !important; border-radius:8px !important; margin:0 .55rem .32rem !important; padding:.52rem .62rem !important; min-height:40px !important; }
+        .dash-nav-link:hover { background:rgba(56,189,248,.1) !important; border-color:rgba(125,211,252,.24) !important; }
+        .dash-nav-link.is-active { color:#7dd3fc !important; background:rgba(56,189,248,.12) !important; border-color:rgba(125,211,252,.28) !important; }
+        .dash-nav-ico { width:15px !important; height:15px !important; }
+        .dash-site-footer { display:none !important; }
+        .dash-content-card { margin-bottom:0 !important; }
+        @media (max-width: 1023px) {
+            .dash-sidebar-outer { width:min(84vw, 320px) !important; padding:0 !important; }
+            .dash-sidebar-card { border-radius:0 !important; }
+            .dash-nav-link { margin:0 .5rem .32rem !important; padding:.52rem .62rem !important; }
+        }
     </style>
 </head>
-<body class="dash-body">
-@include('partials.page-progress')
+<body class="dash-body" data-skip-settings-preloader="{{ request()->routeIs('admin.settings.*') ? '1' : '0' }}">
 @php
+    $navUser = auth()->user();
     $dashCompany = $dashboardSettings->hotelDisplayName();
-    $userInitial = mb_strtoupper(mb_substr(auth()->user()->name, 0, 1));
-    $navN = \App\Models\DashboardNotification::query()->whereNull('read_at')->whereNull('resolved_at')->count();
+    $userInitial = mb_strtoupper(mb_substr($navUser->name, 0, 1));
+    $navNotificationQuery = \App\Models\DashboardNotification::query();
+    app(\App\Support\StaffScope::class)->filterNotificationsByBranch($navNotificationQuery, $navUser);
+    $navN = $navNotificationQuery->whereNull('read_at')->whereNull('resolved_at')->count();
+    $canNav = static fn (string ...$permissions): bool => $navUser->isSuperAdmin() || $navUser->hasAnyPermission($permissions);
+    $showOverview = $canNav('manage-bookings', 'manage-dashboard-notifications', 'manage-hotel-services');
+    $showProperty = $canNav('manage-properties-directory', 'manage-media-library', 'manage-room-categories', 'manage-branches', 'manage-rooms');
+    $showOperations = $canNav('manage-bookings', 'manage-payment-methods', 'manage-customers', 'manage-maintenance');
+    $showCommunication = $canNav('manage-contacts', 'manage-newsletters');
+    $showReports = $canNav('view-reports', 'view-dashboard-analytics', 'export-reports');
+    $showConfiguration = $canNav('manage-system-settings');
+    $showAccess = $canNav('manage-users', 'manage-staff-users', 'manage-roles', 'manage-permissions');
+    $showKitchen = $canNav('access-kitchen-panel', 'manage-kitchen-orders', 'manage-kitchen-menu', 'generate-kitchen-qr', 'view-kitchen-reports');
 @endphp
 
 <div class="dash-root" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
@@ -350,16 +473,18 @@
     </button>
 
     {{-- Logo --}}
-    <a href="{{ route('admin.dashboard') }}" class="dash-header-bar__brand" style="font-size: 15px; white-space: nowrap;">
-        {{ Str::limit($dashCompany, 15) }}
+    <a href="{{ route('admin.dashboard') }}" class="dash-header-bar__brand" style="font-size: 15px;" title="{{ $dashCompany }}">
+        <span class="dash-header-brand-wrap">
+            <img src="{{ $dashboardSettings->headerLogoUrl() }}" alt="{{ $dashCompany }}">
+            <span class="dash-header-brand-text">{{ $dashCompany }}</span>
+        </span>
     </a>
 
     {{-- Branch Selector (Mobile version) --}}
-    @if (auth()->user()->isSuperAdmin())
-        <form method="POST" action="{{ route('admin.branch-scope') }}" class="ml-10">
+    @if ($canNav('switch-branch-scope'))
+        <form method="POST" action="{{ route('admin.branch-scope') }}" class="dash-header-branch-form">
             @csrf
-            <select name="branch_id" onchange="this.form.submit()"
-                style="max-width: 90px; font-size: 11px; padding: 4px; border-radius: 6px; border: 1px solid #ddd;">
+            <select name="branch_id" onchange="this.form.submit()" class="dash-header-branch-select">
                 <option value="">{{ __('All') }}</option>
                 @foreach (\App\Models\HotelBranch::query()->orderBy('name')->get() as $br)
                     <option value="{{ $br->id }}" @selected((string) session('director_branch_id') === (string) $br->id)>
@@ -378,12 +503,20 @@
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 110-16 8 8 0 010 16z"/></svg>
         </a>
 
-        <a href="{{ route('admin.notifications.index') }}" class="dash-header-alert-btn" title="{{ __('Notifications') }}">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-            @if($navN > 0)
-                <span style="position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#c41e3a;color:#fff;font-size:10px;font-weight:800;line-height:18px;text-align:center;">{{ $navN > 99 ? '99+' : $navN }}</span>
-            @endif
-        </a>
+        @if ($canNav('manage-dashboard-notifications'))
+            <a href="{{ route('admin.notifications.index') }}" class="dash-header-alert-btn" title="{{ __('Notifications') }}">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                @if($navN > 0)
+                    <span style="position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#c41e3a;color:#fff;font-size:10px;font-weight:800;line-height:18px;text-align:center;">{{ $navN > 99 ? '99+' : $navN }}</span>
+                @endif
+            </a>
+        @endif
+        <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+            @csrf
+            <button type="submit" class="dash-header-logout-btn" title="{{ __('Log out') }}" aria-label="{{ __('Log out') }}">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H9"/><path stroke-width="2" d="M13 20H6a2 2 0 01-2-2V6a2 2 0 012-2h7"/></svg>
+            </button>
+        </form>
 
         {{-- User Menu --}}
         <div class="dash-user-menu" x-data="{ open: false }">
@@ -392,10 +525,6 @@
             </button>
             <div x-show="open" @click.outside="open = false" class="dash-user-menu__panel" style="right: 0; top: 40px;">
                 <a href="{{ route('profile.edit') }}">{{ __('Profile') }}</a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" style="width: 100%; text-align: left; padding: 10px 15px;">{{ __('Log out') }}</button>
-                </form>
             </div>
         </div>
     </div>
@@ -428,92 +557,153 @@
     <div class="dash-workspace">
         <aside class="dash-sidebar-outer" :class="{ 'is-open': sidebarOpen }">
             <div class="dash-sidebar-card">
-                <div class="dash-nav-heading">{{ __('Overview') }}</div>
                 <nav class="dash-sidebar-nav-scroll" aria-label="{{ __('Admin menu') }}">
                     <a href="{{ route('admin.dashboard') }}" class="dash-nav-link {{ request()->routeIs('admin.dashboard') ? 'is-active' : '' }}">
                         <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
                         {{ __('Dashboard') }}
                     </a>
-                    <a href="{{ route('admin.payments.pending') }}" class="dash-nav-link {{ request()->routeIs('admin.payments.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
-                        {{ __('PendingPayments') }}
-                    </a>
-                    <a href="{{ route('admin.hotel-services.index') }}" class="dash-nav-link {{ request()->routeIs('admin.hotel-services.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 6h16v4H4V6zm0 6h10v8H4v-8zm12 0h4v8h-4v-8z"/></svg>
-                        {{ __('Services') }}
-                    </a>
 
-                    <div class="dash-nav-heading">{{ __('Property') }}</div>
-                    <a href="{{ route('admin.properties.index') }}" class="dash-nav-link {{ request()->routeIs('admin.properties.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
-                        {{ __('Properties') }}
-                    </a>
-                    <a href="{{ route('admin.media-library.index') }}" class="dash-nav-link {{ request()->routeIs('admin.media-library.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 7h16v10H4zM9 7v10M15 7v10"/></svg>
-                        {{ __('Media library') }}
-                    </a>
-                    <a href="{{ route('admin.room-types.index') }}" class="dash-nav-link {{ request()->routeIs('admin.room-types.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 6h16v4H4zM4 14h16v6H4z"/></svg>
-                        {{ __('Room categories') }}
-                    </a>
+                    @if ($showOverview)
+                        <div class="dash-nav-heading">{{ __('Overview') }}</div>
+                        @if ($canNav('manage-bookings'))
+                            <a href="{{ route('admin.payments.pending') }}" class="dash-nav-link {{ request()->routeIs('admin.payments.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+                                {{ __('PendingPayments') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-hotel-services'))
+                            <a href="{{ route('admin.hotel-services.index') }}" class="dash-nav-link {{ request()->routeIs('admin.hotel-services.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 6h16v4H4V6zm0 6h10v8H4v-8zm12 0h4v8h-4v-8z"/></svg>
+                                {{ __('Services') }}
+                            </a>
+                        @endif
+                    @endif
 
-                    <div class="dash-nav-heading">{{ __('Operations') }}</div>
-                    <a href="{{ route('admin.bookings.index') }}" class="dash-nav-link {{ request()->routeIs('admin.bookings.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        {{ __('Bookings') }}
-                    </a>
-                    <a href="{{ route('admin.payment-methods.index') }}" class="dash-nav-link {{ request()->routeIs('admin.payment-methods.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M3 7h18v10H3zM7 11h2m2 0h6"/></svg>
-                        {{ __('Payment methods') }}
-                    </a>
-                    <a href="{{ route('admin.customers.index') }}" class="dash-nav-link {{ request()->routeIs('admin.customers.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
-                        {{ __('Guests') }}
-                    </a>
-                    <div class="dash-nav-heading">{{ __('Communication') }}</div>
-                    <a href="{{ route('admin.contacts.index') }}" class="dash-nav-link {{ request()->routeIs('admin.contacts.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M21 15a4 4 0 01-4 4H7l-4 4V7a4 4 0 014-4h10a4 4 0 014 4v8z"/></svg>
-                        {{ __('Messages') }}
-                    </a>
-                    <a href="{{ route('admin.emails.index') }}" class="dash-nav-link {{ request()->routeIs('admin.emails.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        {{ __('Emails') }}
-                    </a>
-                    <a href="{{ route('admin.maintenance.index') }}" class="dash-nav-link {{ request()->routeIs('admin.maintenance.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-                        {{ __('Maintenance') }}
-                    </a>
+                    @if ($showProperty)
+                        <div class="dash-nav-heading">{{ __('Property') }}</div>
+                        @if ($canNav('manage-properties-directory'))
+                            <a href="{{ route('admin.properties.index') }}" class="dash-nav-link {{ request()->routeIs('admin.properties.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+                                {{ __('Properties') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-media-library'))
+                            <a href="{{ route('admin.media-library.index') }}" class="dash-nav-link {{ request()->routeIs('admin.media-library.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 7h16v10H4zM9 7v10M15 7v10"/></svg>
+                                {{ __('Media library') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-room-categories'))
+                            <a href="{{ route('admin.room-types.index') }}" class="dash-nav-link {{ request()->routeIs('admin.room-types.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 6h16v4H4zM4 14h16v6H4z"/></svg>
+                                {{ __('Room categories') }}
+                            </a>
+                        @endif
+                    @endif
 
-                    <div class="dash-nav-heading">{{ __('Reports') }}</div>
-                    <a href="{{ route('admin.reports.index') }}" class="dash-nav-link {{ request()->routeIs('admin.reports.index') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 19V5M8 19v-6m4 6V9m4 10V5"/></svg>
-                        {{ __('Reports') }}
-                    </a>
+                    @if ($showOperations)
+                        <div class="dash-nav-heading">{{ __('Operations') }}</div>
+                        @if ($canNav('manage-bookings'))
+                            <a href="{{ route('admin.bookings.index') }}" class="dash-nav-link {{ request()->routeIs('admin.bookings.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                {{ __('Bookings') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-payment-methods'))
+                            <a href="{{ route('admin.payment-methods.index') }}" class="dash-nav-link {{ request()->routeIs('admin.payment-methods.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M3 7h18v10H3zM7 11h2m2 0h6"/></svg>
+                                {{ __('Payment methods') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-customers'))
+                            <a href="{{ route('admin.customers.index') }}" class="dash-nav-link {{ request()->routeIs('admin.customers.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+                                {{ __('Guests') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-maintenance'))
+                            <a href="{{ route('admin.maintenance.index') }}" class="dash-nav-link {{ request()->routeIs('admin.maintenance.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+                                {{ __('Maintenance') }}
+                            </a>
+                        @endif
+                        @if ($showKitchen)
+                            <a href="{{ route('kitchen.dashboard') }}" target="_blank" rel="noopener" class="dash-nav-link {{ request()->routeIs('kitchen.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M8 3v8M16 3v8M5 21h14M7 11h10M8 21v-4a2 2 0 012-2h4a2 2 0 012 2v4"/></svg>
+                                {{ __('Kitchen dashboard') }}
+                            </a>
+                        @endif
+                        @if ($canNav('access-reception-panel'))
+                            <a href="{{ route('reception.dashboard') }}" target="_blank" rel="noopener" class="dash-nav-link {{ request()->routeIs('reception.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M3 10h18M6 6h12M8 14h8M5 18h14"/></svg>
+                                {{ __('Reception dashboard') }}
+                            </a>
+                        @endif
+                        <a href="{{ route('dashboard', ['guest_view' => 1]) }}" target="_blank" rel="noopener" class="dash-nav-link {{ request()->routeIs('dashboard') && request()->boolean('guest_view') ? 'is-active' : '' }}">
+                            <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H9l-4 4V6a2 2 0 012-2z"/></svg>
+                            {{ __('Guest dashboard') }}
+                        </a>
+                    @endif
 
-                    <div class="dash-nav-heading">{{ __('Configuration') }}</div>
-                    <a href="{{ route('admin.settings.edit') }}" class="dash-nav-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path stroke-width="2" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                        {{ __('System settings') }}
-                    </a>
+                    @if ($showCommunication)
+                        <div class="dash-nav-heading">{{ __('Communication') }}</div>
+                        @if ($canNav('manage-contacts'))
+                            <a href="{{ route('admin.contacts.index') }}" class="dash-nav-link {{ request()->routeIs('admin.contacts.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M21 15a4 4 0 01-4 4H7l-4 4V7a4 4 0 014-4h10a4 4 0 014 4v8z"/></svg>
+                                {{ __('Messages') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-newsletters'))
+                            <a href="{{ route('admin.emails.index') }}" class="dash-nav-link {{ request()->routeIs('admin.emails.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                {{ __('Emails') }}
+                            </a>
+                        @endif
+                    @endif
 
+                    @if ($showReports)
+                        <div class="dash-nav-heading">{{ __('Reports') }}</div>
+                        <a href="{{ route('admin.reports.index') }}" class="dash-nav-link {{ request()->routeIs('admin.reports.*') ? 'is-active' : '' }}">
+                            <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M4 19V5M8 19v-6m4 6V9m4 10V5"/></svg>
+                            {{ __('Reports') }}
+                        </a>
+                    @endif
+
+                    @if ($showConfiguration)
+                        <div class="dash-nav-heading">{{ __('Configuration') }}</div>
+                        <a href="{{ route('admin.settings.edit') }}" class="dash-nav-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}">
+                            <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path stroke-width="2" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                            {{ __('System settings') }}
+                        </a>
+                    @endif
+
+                @if ($showAccess)
                     <div class="dash-nav-heading">{{ __('Access') }}</div>
-                    <a href="{{ route('admin.users.index') }}" class="dash-nav-link {{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-                        {{ __('Users') }}
-                    </a>
-                    <a href="{{ route('admin.roles.index') }}" class="dash-nav-link {{ request()->routeIs('admin.roles.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M12 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zM4 20c0-3.31 5.33-5 8-5s8 1.69 8 5"/></svg>
-                        {{ __('Roles') }}
-                    </a>
-                    <a href="{{ route('admin.permissions.index') }}" class="dash-nav-link {{ request()->routeIs('admin.permissions.*') ? 'is-active' : '' }}">
-                        <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        {{ __('Permissions') }}
-                    </a>
+                        @if ($canNav('manage-users', 'manage-staff-users'))
+                            <a href="{{ route('admin.users.index') }}" class="dash-nav-link {{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                                {{ __('Users') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-roles'))
+                            <a href="{{ route('admin.roles.index') }}" class="dash-nav-link {{ request()->routeIs('admin.roles.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M12 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zM4 20c0-3.31 5.33-5 8-5s8 1.69 8 5"/></svg>
+                                {{ __('Roles') }}
+                            </a>
+                        @endif
+                        @if ($canNav('manage-permissions'))
+                            <a href="{{ route('admin.permissions.index') }}" class="dash-nav-link {{ request()->routeIs('admin.permissions.*') ? 'is-active' : '' }}">
+                                <svg class="dash-nav-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-width="2" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                {{ __('Permissions') }}
+                            </a>
+                        @endif
+                    @endif
                 </nav>
             </div>
         </aside>
 
         <div class="dash-content-outer">
+            @include('partials.dashboard-preloader')
             <div class="dash-content-scroll">
                 <div class="dash-content-card">
                     @yield('content')
@@ -548,6 +738,25 @@
             });
         });
     })(@json(__('Show password')), @json(__('Hide password')));
+
+    (function () {
+        var preloader = document.querySelector('[data-dash-preloader]');
+        if (preloader) {
+            var hidePreloader = function () { preloader.classList.add('is-hidden'); };
+            hidePreloader();
+            window.addEventListener('load', function () { setTimeout(hidePreloader, 180); });
+        }
+    })();
+
+    (function () {
+        document.querySelectorAll('.dash-sidebar-nav-scroll a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (window.innerWidth <= 1023) {
+                    document.querySelectorAll('.dash-sidebar-outer').forEach(function (el) { el.classList.remove('is-open'); });
+                }
+            });
+        });
+    })();
 
     (function () {
         document.querySelectorAll('form[data-autosave-key]').forEach(function (form) {

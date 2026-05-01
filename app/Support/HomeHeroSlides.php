@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Models\SystemSetting;
+
 final class HomeHeroSlides
 {
     private static function resolveSlide(string $value): string
@@ -24,18 +26,17 @@ final class HomeHeroSlides
      */
     public static function displayedUrls(): array
     {
-        $extraSlides = config('site.default_home_hero_slides', []);
-        $heroSlideUrls = array_values(array_unique(array_filter([
-            self::resolveSlide((string) ($extraSlides[0] ?? 'img/mambosasa/hr1.jpg')),
-            self::resolveSlide((string) ($extraSlides[1] ?? 'img/mambosasa/hr1.jpg')),
-            self::resolveSlide((string) ($extraSlides[2] ?? 'img/mambosasa/hr2.webp')),
-            self::resolveSlide((string) ($extraSlides[3] ?? 'img/mambosasa/hr2.webp')),
-        ])));
-        // if (count($heroSlideUrls) > 1) {
-        //     array_shift($heroSlideUrls);
-        // }
+        $settingSlides = SystemSetting::current()->resolvedHomeHeroSlides();
+        if ($settingSlides !== []) {
+            return array_values(array_unique(array_map(fn (string $slide) => self::resolveSlide($slide), $settingSlides)));
+        }
 
-        return $heroSlideUrls;
+        $extraSlides = config('site.default_home_hero_slides', []);
+
+        return array_values(array_unique(array_filter(array_map(
+            fn ($slide) => self::resolveSlide((string) $slide),
+            $extraSlides
+        ))));
     }
 
     /**

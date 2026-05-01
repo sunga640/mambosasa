@@ -60,6 +60,14 @@
             </div>
         @endif
 
+        @if ($dashboardSettings->restaurantIntegrationConfigured() && ($booking->status === BookingStatus::Confirmed || $booking->status === BookingStatus::PendingPayment))
+            <div class="mt-30 p-20" style="border:1px solid #d1fae5;background:#ecfdf5;">
+                <p class="fw-600 mb-8" style="color:#0f766e;">{{ __('Restaurant system') }}</p>
+                <p class="text-14 mb-15" style="opacity:.85;">{{ __('Use the connected restaurant platform for live food ordering. Access is issued from this hotel system with a short-lived secure token.') }}</p>
+                <a href="{{ route('member.restaurant.launch') }}" class="button -md -accent-1 bg-accent-1 text-white" style="text-decoration:none;padding:.45rem 1rem;border-radius:8px;display:inline-block;">{{ __('Open restaurant ordering') }}</a>
+            </div>
+        @endif
+
         @if (isset($catalogServices) && $catalogServices->isNotEmpty() && ($booking->user_id === auth()->id() || $booking->email === auth()->user()->email) && ($booking->status === BookingStatus::Confirmed || $booking->status === BookingStatus::PendingPayment))
             <h2 class="text-20 mt-40 mb-15">{{ __('Request a hotel service') }}</h2>
             <p class="text-14 mb-15" style="opacity:.85;">{{ __('Choose an add-on for this stay. The hotel will confirm availability and pricing.') }}</p>

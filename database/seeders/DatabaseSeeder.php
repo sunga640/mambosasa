@@ -30,34 +30,34 @@ class DatabaseSeeder extends Seeder
 
         $this->call(BookingMethodSeeder::class);
 
-        $permissionDefs = [
-            ['name' => 'Manage roles', 'slug' => 'manage-roles', 'description' => 'Create, edit, and delete roles; assign permissions to roles.'],
-            ['name' => 'Manage permissions', 'slug' => 'manage-permissions', 'description' => 'Create, edit, and delete permissions.'],
-            ['name' => 'Manage users', 'slug' => 'manage-users', 'description' => 'Create, edit, and delete system users.'],
-            ['name' => 'View reports', 'slug' => 'view-reports', 'description' => 'Access reporting (placeholder for future modules).'],
-        ];
-
-        foreach ($permissionDefs as $def) {
-            Permission::query()->create($def);
-        }
-
-        $superAdmin = Role::query()->create([
-            'name' => 'Super admin',
+        $superAdmin = Role::query()->firstOrCreate([
             'slug' => Role::SUPER_ADMIN_SLUG,
+        ], [
+            'name' => 'Super admin',
             'is_system' => true,
         ]);
 
-        $guest = Role::query()->create([
-            'name' => 'Guest',
+        Role::query()->firstOrCreate([
             'slug' => Role::GUEST_SLUG,
+        ], [
+            'name' => 'Guest',
             'is_system' => true,
         ]);
 
-        $superAdmin->permissions()->sync(Permission::query()->pluck('id'));
+        Role::query()->firstOrCreate([
+            'slug' => Role::MANAGER_SLUG,
+        ], [
+            'name' => 'Manager',
+            'is_system' => true,
+        ]);
 
-        User::query()->create([
-            'name' => 'Super Admin',
+        $this->call(ExtendedPermissionsSeeder::class);
+        $superAdmin->permissions()->syncWithoutDetaching(Permission::query()->pluck('id'));
+
+        User::query()->firstOrCreate([
             'email' => 'admin@hotel.test',
+        ], [
+            'name' => 'Super Admin',
             'password' => Hash::make('password'),
             'role_id' => $superAdmin->id,
             'email_verified_at' => now(),
@@ -66,7 +66,6 @@ class DatabaseSeeder extends Seeder
         $this->call(AssignSuperAdminByEmailSeeder::class);
         $this->call(RoomRankSeeder::class);
         $this->call(GuestPortalUserSeeder::class);
-        $this->call(ExtendedPermissionsSeeder::class);
         $this->call(StaffRolesSeeder::class);
         $this->call(RoomServiceMenuSeeder::class);
     }

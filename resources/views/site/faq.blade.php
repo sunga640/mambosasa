@@ -24,7 +24,7 @@
               </div>
 
               <h1 style="font-size: clamp(32px, 5vw, 56px); font-weight: 800; color: #ffffff; line-height: 1.1; letter-spacing: -1.5px;">
-                <span style="display: block; margin-bottom: 10px;">{{ __('Everything You Need to Know Before Planning Your Perfect Coastal Getaway') }}</span>
+                <span style="display: block; margin-bottom: 10px;">{{ __('Everything You Need to Know Before Planning a Comfortable Stay at :hotel', ['hotel' => $siteSettings->hotelDisplayName()]) }}</span>
                 <span style="display: block; font-size: 0.6em; color: rgba(255,255,255,0.8); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
                     {{ __('Frequently Asked Questions & Travel Guidelines') }}
                 </span>

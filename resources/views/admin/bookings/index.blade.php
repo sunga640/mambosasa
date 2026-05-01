@@ -3,6 +3,38 @@
 @section('title', __('Bookings'))
 
 @section('content')
+    <style>
+        .bookings-table td,
+        .bookings-table th {
+            vertical-align: middle;
+        }
+        .bookings-table .booking-days-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 2.5rem;
+            padding: .42rem .7rem !important;
+            line-height: 1.45;
+            text-align: center;
+            white-space: normal;
+        }
+        .bookings-table .admin-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+        .bookings-table .admin-actions form {
+            display: inline-flex !important;
+            margin: 0;
+        }
+        .bookings-table .admin-actions a,
+        .bookings-table .admin-actions span,
+        .bookings-table .admin-actions button {
+            margin-left: 0 !important;
+        }
+    </style>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
         <h1 class="text-30">{{ __('Bookings') }}</h1>
     </div>
@@ -34,7 +66,7 @@
         </div>
     </form>
 
-    <table class="admin-table">
+    <table class="admin-table bookings-table">
         <thead>
             <tr>
                 <th>{{ __('Reference') }}</th>
@@ -60,7 +92,7 @@
                     <td>{{ $b->room?->name ?? '—' }}</td>
                     <td>
                         @if ($b->check_in && $b->check_out)
-                            <button type="button" class="js-booking-days text-13" data-check-in="{{ $b->check_in->format('Y-m-d') }}" data-check-out="{{ $b->check_out->format('Y-m-d') }}" style="border:1px solid #d1d5db;background:#fff;border-radius:6px;padding:.2rem .45rem;cursor:pointer;">
+                            <button type="button" class="js-booking-days text-13 booking-days-chip" data-check-in="{{ $b->check_in->format('Y-m-d') }}" data-check-out="{{ $b->check_out->format('Y-m-d') }}" style="border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;">
                                 {{ $b->check_in->format('Y-m-d') }} → {{ $b->check_out->format('Y-m-d') }}
                             </button>
                         @else
@@ -71,13 +103,15 @@
                     <td>{{ number_format((float) $b->total_amount, 0) }}</td>
                     <td>{{ $b->created_at?->format('Y-m-d H:i') }}</td>
                     <td class="admin-actions">
-                        <a href="{{ route('admin.bookings.show', $b) }}">{{ __('View') }}</a>
+                        <a href="{{ route('admin.bookings.show', $b) }}" style="font-weight:600;">{{ __('View') }}</a>
                         @if ($b->status !== \App\Enums\BookingStatus::Confirmed)
-                            <form action="{{ route('admin.bookings.destroy', $b) }}" method="POST" style="display:inline;" onsubmit="return confirm(@json(__('Permanently delete this booking?')));">
+                            <form action="{{ route('admin.bookings.destroy', $b) }}" method="POST" style="display:inline-flex;" onsubmit="return confirm(@json(__('Permanently delete this booking?')));">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" style="background:none;border:none;color:#c62828;cursor:pointer;padding:0;margin-left:.5rem;">{{ __('Delete') }}</button>
+                                <button type="submit" style="background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;cursor:pointer;padding:.35rem .7rem;font-weight:600;">{{ __('Delete') }}</button>
                             </form>
+                        @else
+                            <span style="color:#94a3b8;font-size:.82rem;font-weight:600;">{{ __('Locked') }}</span>
                         @endif
                     </td>
                 </tr>

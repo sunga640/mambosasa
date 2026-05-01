@@ -43,17 +43,11 @@ return [
         'synchronous' => null,
         'transaction_mode' => 'DEFERRED',
         ],
-
-                'sqlite_old' => [
-                    'driver' => 'sqlite',
-                    'database' => database_path('database.sqlite'),
-                    'prefix' => '',
-                ],
-
-            'mysql' => [
-                'driver' => 'mysql',
-
-            ],
+        'sqlite_old' => [
+            'driver' => 'sqlite',
+            'database' => database_path('database.sqlite'),
+            'prefix' => '',
+        ],
 
         'mysql' => [
             'driver' => 'mysql',

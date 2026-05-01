@@ -53,7 +53,7 @@ use Illuminate\Support\ServiceProvider;
 
             // Allow runtime SMTP setup from admin system settings.
             if ($settings->smtp_host && $settings->smtp_port) {
-                config([
+                $smtpConfig = [
                     'mail.default' => 'smtp',
                     'mail.mailers.smtp.host' => $settings->smtp_host,
                     'mail.mailers.smtp.port' => (int) $settings->smtp_port,
@@ -62,7 +62,21 @@ use Illuminate\Support\ServiceProvider;
                     'mail.mailers.smtp.encryption' => $settings->smtp_encryption ?: null,
                     'mail.from.address' => $settings->mail_from_address ?: config('mail.from.address'),
                     'mail.from.name' => $settings->mail_from_name ?: config('mail.from.name'),
-                ]);
+                ];
+
+                $opensslCaFile = (string) ini_get('openssl.cafile');
+                if ($opensslCaFile !== '' && ! is_file($opensslCaFile)) {
+                    // Fallback for Windows/XAMPP setups where PHP points to a removed CA bundle path.
+                    $smtpConfig['mail.mailers.smtp.stream'] = [
+                        'ssl' => [
+                            'verify_peer' => false,
+                            'verify_peer_name' => false,
+                            'allow_self_signed' => true,
+                        ],
+                    ];
+                }
+
+                config($smtpConfig);
             }
         }
     }

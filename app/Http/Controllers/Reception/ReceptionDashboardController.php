@@ -11,6 +11,7 @@ use App\Models\Customer;
 use App\Models\HotelBranch;
 use App\Models\Room;
 use App\Models\RoomMaintenance;
+use App\Models\RoomServiceOrder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon; // Hakikisha hii ipo
 use App\Support\DashboardMonthCalendar;
@@ -85,6 +86,23 @@ class ReceptionDashboardController extends Controller
             ->whereYear('started_at', now()->year)
             ->sum('expenses');
 
+        $roomServiceBills = RoomServiceOrder::query();
+        if ($branchIds !== null) {
+            if ($branchIds === []) {
+                $roomServiceBills->whereRaw('0=1');
+            } else {
+                $roomServiceBills->whereIn('hotel_branch_id', $branchIds);
+            }
+        }
+        if (RoomServiceOrder::supportsPaymentTracking()) {
+            $roomServiceBills->whereNotNull('bill_generated_at')
+                ->where('payment_status', '!=', 'paid');
+        } else {
+            $roomServiceBills->whereRaw('0=1');
+        }
+        $kpis['kitchen_unpaid_bills'] = (clone $roomServiceBills)->count();
+        $kpis['kitchen_unpaid_amount'] = (float) (clone $roomServiceBills)->sum('total_amount');
+
         // ... code zingine zinaendelea vilevile (paymentByMethod, branchTotals, etc.) ...
 
         // PAYMENT BY METHOD
@@ -115,6 +133,16 @@ class ReceptionDashboardController extends Controller
             ];
         }
 
+        $cashRevenue = (float) (clone $bookingBase)
+            ->where('status', BookingStatus::Confirmed)
+            ->whereHas('method', fn ($m) => $m->where('slug', 'cash'))
+            ->sum('total_amount');
+
+        $nonCashRevenue = (float) (clone $bookingBase)
+            ->where('status', BookingStatus::Confirmed)
+            ->whereDoesntHave('method', fn ($m) => $m->where('slug', 'cash'))
+            ->sum('total_amount');
+
         $expenseRows = (clone $maintQ)
             ->whereDate('started_at', '>=', now()->subDays(30)->toDateString())
             ->selectRaw('DATE(started_at) as d, SUM(COALESCE(expenses,0)) as total')
@@ -143,7 +171,9 @@ class ReceptionDashboardController extends Controller
             ];
         }
 
-        $recentContacts = ContactMessage::query()->latest()->limit(5)->get();
+        $recentContacts = ContactMessage::query()->with('branch')->latest();
+        $scope->filterContactMessagesByBranch($recentContacts);
+        $recentContacts = $recentContacts->limit(5)->get();
 
         $chartDays = 14;
         $chartStart = now()->subDays($chartDays - 1)->startOfDay();
@@ -180,6 +210,8 @@ class ReceptionDashboardController extends Controller
             'chartRevenueData' => $chartRevenueData,
             'paymentSeriesLabels' => $paymentSeriesLabels,
             'paymentSeriesDataset' => $paymentSeriesDataset,
+            'cashRevenue' => $cashRevenue,
+            'nonCashRevenue' => $nonCashRevenue,
             'expenseLabels' => $expenseLabels,
             'expenseSeries' => $expenseSeries,
             'branchSummary' => [

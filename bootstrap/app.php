@@ -12,35 +12,24 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'api/pesapal/ipn',
+            'pesapal/ipn',
+        ]);
+
         $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\PreventBackHistory::class,
         ]);
 
         $middleware->alias([
             'super.admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+            'admin.panel' => \App\Http\Middleware\EnsureAdminPanelAccess::class,
             'staff.panel' => \App\Http\Middleware\EnsureStaffPanelAccess::class,
             'active.account' => \App\Http\Middleware\EnsureAccountIsActive::class,
             'permission' => \App\Http\Middleware\EnsurePermission::class,
         ]);
     })
-    ->withMiddleware(function (Middleware $middleware): void {
-    // HAPA: Ruhusu PesaPal kupita bila CSRF token
-    $middleware->validateCsrfTokens(except: [
-        'api/pesapal/ipn',  // Hii lazima ifanane na URL uliyoweka kwenye routes
-        'pesapal/ipn'       // Ongeza zote mbili kwa usalama
-    ]);
-
-    $middleware->web(append: [
-        \App\Http\Middleware\PreventBackHistory::class,
-    ]);
-
-    $middleware->alias([
-        'super.admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
-        'staff.panel' => \App\Http\Middleware\EnsureStaffPanelAccess::class,
-        'active.account' => \App\Http\Middleware\EnsureAccountIsActive::class,
-        'permission' => \App\Http\Middleware\EnsurePermission::class,
-    ]);
-})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })
@@ -49,4 +38,3 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('bookings:notify-stay-ended')->everyFiveMinutes();
     })
     ->create();
-

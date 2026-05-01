@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MediaAsset;
+use App\Support\PublicDisk;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -29,5 +30,13 @@ class MediaLibraryController extends Controller
         }
 
         return back()->with('status', __('Media uploaded to library.'));
+    }
+
+    public function destroy(MediaAsset $asset): RedirectResponse
+    {
+        PublicDisk::delete($asset->path);
+        $asset->delete();
+
+        return back()->with('status', __('Media deleted from library.'));
     }
 }

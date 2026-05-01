@@ -11,6 +11,7 @@
         <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
             <a href="{{ route('admin.reports.index') }}" class="dash-btn dash-btn--ghost">{{ __('All reports') }}</a>
             <a href="{{ $exportUrl }}" class="dash-btn dash-btn--primary">{{ __('Export CSV') }}</a>
+            <a href="{{ route('admin.reports.export', array_filter(array_merge(request()->query(), ['type' => $reportType, 'format' => 'pdf', 'status' => $statusFilter]), fn ($value) => $value !== null && $value !== '')) }}" target="_blank" class="dash-btn dash-btn--ghost">{{ __('Export PDF') }}</a>
         </div>
     </div>
 

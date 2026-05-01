@@ -10,6 +10,8 @@ use App\Models\RestaurantMenuItem;
 use App\Models\RoomServiceOrder;
 use App\Models\RoomServiceOrderItem;
 use App\Models\User;
+use App\Services\KitchenNotificationService;
+use App\Services\RoomServiceOrderPaymentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +20,26 @@ use Illuminate\Validation\ValidationException;
 
 class GuestStayController extends Controller
 {
+    public function __construct(
+        private readonly RoomServiceOrderPaymentService $payments,
+        private readonly KitchenNotificationService $notifications,
+    ) {}
+
+    private function orderPayload(array $attributes): array
+    {
+        if (! RoomServiceOrder::supportsPaymentTracking()) {
+            unset(
+                $attributes['public_reference'],
+                $attributes['booking_method_id'],
+                $attributes['payment_status'],
+                $attributes['payment_reference'],
+                $attributes['paid_at'],
+            );
+        }
+
+        return $attributes;
+    }
+
     public function show(string $token): View
     {
         $booking = Booking::findByValidGuestToken($token);
@@ -35,7 +57,8 @@ class GuestStayController extends Controller
 
         $recentOrders = RoomServiceOrder::query()
             ->where('booking_id', $booking->id)
-            ->with(['room', 'items'])
+            ->when(RoomServiceOrder::supportsPaymentTracking(), fn ($query) => $query->where('payment_status', '!=', 'paid'))
+            ->with(['room', 'items', 'bookingMethod'])
             ->latest()
             ->limit(10)
             ->get();
@@ -46,6 +69,7 @@ class GuestStayController extends Controller
             'menu' => $menu,
             'canOrderService' => $canOrderService,
             'recentOrders' => $recentOrders,
+            'paymentMethods' => $this->payments->onlineMethods(),
         ]);
     }
 
@@ -107,19 +131,25 @@ class GuestStayController extends Controller
         $userId = $booking->user_id ?? User::guestPortalUserId();
         abort_if(! $userId, 503);
 
-        DB::transaction(function () use ($userId, $booking, $roomId, $branchId, $rows, $menuRows, $total, $maxPrep, $data): void {
+        $createdOrder = null;
+
+        DB::transaction(function () use ($userId, $booking, $roomId, $branchId, $rows, $menuRows, $total, $maxPrep, $data, &$createdOrder): void {
             $eta = now()->addMinutes($maxPrep);
-            $order = RoomServiceOrder::query()->create([
-                'user_id' => $userId,
+            $order = RoomServiceOrder::query()->create($this->orderPayload([
+                'user_id' => $booking->user_id ?: $userId,
                 'booking_id' => $booking->id,
                 'room_id' => $roomId,
                 'hotel_branch_id' => $branchId,
+                'request_source' => 'portal',
+                'guest_name' => trim($booking->first_name.' '.$booking->last_name),
+                'guest_phone' => $booking->phone,
                 'status' => RoomServiceOrderStatus::Pending->value,
+                'payment_status' => 'unpaid',
                 'estimated_ready_at' => $eta,
                 'preparation_minutes' => $maxPrep,
                 'total_amount' => $total,
                 'notes' => $data['notes'] ?? null,
-            ]);
+            ]));
 
             foreach ($rows as $row) {
                 $item = $menuRows->get($row['menu_item_id']);
@@ -134,7 +164,13 @@ class GuestStayController extends Controller
                     'line_total' => $unit * $qty,
                 ]);
             }
+
+            $createdOrder = $order;
         });
+
+        if ($createdOrder) {
+            $this->notifications->notifyNewOrder($createdOrder->fresh(['room']));
+        }
 
         return redirect()
             ->route('site.guest-stay.show', ['token' => $token])

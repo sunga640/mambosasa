@@ -77,7 +77,7 @@ class RoomController extends Controller
             'selectedBranchId' => $fixedBranchId ?: ($scopedBranchId ?: ($request->integer('branch_id') ?: null)),
             'selectedRoomTypeId' => $selectedRoomTypeId,
             'fixedBranchId' => $fixedBranchId,
-            'mediaAssets' => MediaAsset::query()->latest()->limit(100)->get(),
+            'mediaAssets' => MediaAsset::query()->latest()->get(),
         ]);
     }
 
@@ -123,7 +123,7 @@ class RoomController extends Controller
             'branches' => HotelBranch::query()->orderBy('name')->get(),
             'roomRanks' => RoomRank::query()->orderBy('sort_order')->orderBy('name')->get(),
             'roomTypes' => RoomType::query()->where('is_active', true)->orderBy('name')->get(),
-            'mediaAssets' => MediaAsset::query()->latest()->limit(100)->get(),
+            'mediaAssets' => MediaAsset::query()->latest()->get(),
         ]);
     }
 

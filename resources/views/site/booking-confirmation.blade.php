@@ -18,7 +18,7 @@
 
     .booking-main-card {
         background: #ffffff;
-        border-radius: 20px;
+        border-radius: 0;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
         border: 1px solid #f1f5f9;
         padding: 40px;
@@ -26,7 +26,7 @@
 
     .status-badge {
         padding: 6px 16px;
-        border-radius: 50px;
+        border-radius: 0;
         font-size: 14px;
         font-weight: 600;
         display: inline-flex;
@@ -43,7 +43,7 @@
     .info-item {
         background: #f8fafc;
         padding: 15px 20px;
-        border-radius: 12px;
+        border-radius: 0;
         border: 1px solid #f1f5f9;
         transition: all 0.3s ease;
     }
@@ -77,7 +77,7 @@
 
     .action-button {
         padding: 12px 30px;
-        border-radius: 12px;
+        border-radius: 0;
         font-weight: 600;
         transition: all 0.3s;
         display: inline-flex;
@@ -91,7 +91,7 @@
     }
 
 </style>
-
+<br><br><br><br>
 <section class="layout-pt-md layout-pb-lg bg-light-2">
     <div class="container">
         <div class="row justify-center">
@@ -99,12 +99,12 @@
 
                 <div class="booking-main-card">
                     @if ($errors->has('payment'))
-                        <div class="mb-25 p-20 rounded-12" style="background: var(--error-bg); border: 1px solid #fecaca; color: var(--error-text);">
+                        <div class="mb-25 p-20" style="background: var(--error-bg); border: 1px solid #fecaca; color: var(--error-text); border-radius:0;">
                             <strong>{{ __('Payment') }}:</strong> {{ $errors->first('payment') }}
                         </div>
                     @endif
                     @if (session('status'))
-                        <div class="mb-25 p-20 rounded-12" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;">
+                        <div class="mb-25 p-20" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius:0;">
                             {{ session('status') }}
                         </div>
                     @endif
@@ -113,11 +113,11 @@
                     <div class="text-center mb-40">
                         <div class="mb-20">
                             @if($booking->status === BookingStatus::Confirmed)
-                                <div class="icon-circle bg-success-light text-success-2 mx-auto" style="width:80px; height:80px; font-size:40px; background:#dcfce7; color:#22c55e; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <div class="icon-circle bg-success-light text-success-2 mx-auto" style="width:80px; height:80px; font-size:40px; background:#dcfce7; color:#22c55e; border-radius:0; display:flex; align-items:center; justify-content:center;">
                                     <i class="fa fa-check"></i>
                                 </div>
                             @else
-                                <div class="icon-circle bg-blue-light text-blue-1 mx-auto" style="width:80px; height:80px; font-size:40px; background:#eff6ff; color:#3b82f6; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <div class="icon-circle bg-blue-light text-blue-1 mx-auto" style="width:80px; height:80px; font-size:40px; background:#eff6ff; color:#3b82f6; border-radius:0; display:flex; align-items:center; justify-content:center;">
                                     <i class="fa fa-hotel"></i>
                                 </div>
                             @endif
@@ -136,7 +136,7 @@
                                 || str_contains(strtolower($booking->method->name), 'pesapal')
                             );
                         @endphp
-                        <div style="background: var(--pending-bg); border: 1px solid #fde68a; border-radius: 16px; padding: 30px; text-align: center; margin-bottom: 30px;">
+                        <div style="background: var(--pending-bg); border: 1px solid #fde68a; border-radius: 0; padding: 30px; text-align: center; margin-bottom: 30px;">
                             <h3 class="text-18 fw-600 mb-10" style="color: var(--pending-text);">{{ __('Awaiting Payment') }}</h3>
                             <div id="pay-countdown" class="countdown-timer mb-15" data-deadline="{{ $booking->payment_deadline_at->toIso8601String() }}">00:00</div>
 
@@ -155,7 +155,7 @@
                                 </p>
                             @else
                                 <p class="text-14 fw-600 mb-10" style="color: var(--pending-text);">{{ __('Payment method: :name', ['name' => $booking->method->name]) }}</p>
-                                <div class="text-left mx-auto" style="max-width: 480px; background: #fff; border-radius: 12px; padding: 18px 20px; border: 1px solid #fde68a;">
+                                <div class="text-left mx-auto" style="max-width: 480px; background: #fff; border-radius: 0; padding: 18px 20px; border: 1px solid #fde68a;">
                                     @if ($booking->method->account_number)
                                         <p class="text-14 mb-8"><span class="text-light-1">{{ __('Account number') }}:</span> <strong class="text-dark-1">{{ $booking->method->account_number }}</strong></p>
                                     @endif
@@ -178,7 +178,7 @@
 
                     {{-- 2. CONFIRMED STATE --}}
                     @elseif ($booking->status === BookingStatus::Confirmed)
-                        <div style="background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: 16px; padding: 30px; margin-bottom: 30px;">
+                        <div style="background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: 0; padding: 30px; margin-bottom: 30px;">
                             <div class="d-flex items-start gap-15">
                                 <i class="fa fa-envelope-open-text text-24 mt-5" style="color: var(--success-text);"></i>
                                 <div>
@@ -195,7 +195,7 @@
 
                     {{-- 3. EXPIRED STATE --}}
                     @elseif ($booking->status === BookingStatus::Expired)
-                        <div style="background: var(--error-bg); border: 1px solid #fee2e2; border-radius: 16px; padding: 30px; text-align: center; margin-bottom: 30px;">
+                        <div style="background: var(--error-bg); border: 1px solid #fee2e2; border-radius: 0; padding: 30px; text-align: center; margin-bottom: 30px;">
                             <i class="fa fa-exclamation-circle text-30 mb-10" style="color: var(--error-text);"></i>
                             <h3 class="text-18 fw-600" style="color: var(--error-text);">{{ __('Booking Expired') }}</h3>
                             <p class="text-14">{{ __('The payment time limit has been exceeded.') }}</p>
@@ -204,7 +204,7 @@
 
                     {{-- Invoice Section --}}
                     @if ($booking->invoice)
-                        <div class="d-flex items-center justify-between p-20 bg-light-1 rounded-12 mb-30" style="border: 1px dashed #cbd5e1;">
+                        <div class="d-flex items-center justify-between p-20 bg-light-1 mb-30" style="border: 1px dashed #cbd5e1; border-radius:0;">
                             <div>
                                 <p class="text-14 text-light-1">{{ __('Invoice Number') }}</p>
                                 <p class="text-16 fw-600">{{ $booking->invoice->number }}</p>

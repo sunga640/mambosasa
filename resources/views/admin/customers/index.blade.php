@@ -3,6 +3,28 @@
 @section('title', __('Guests'))
 
 @section('content')
+    <style>
+        .guest-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: .28rem .72rem;
+            border: 1px solid rgba(125, 211, 252, .24);
+            background: rgba(56, 189, 248, .12);
+            color: #e0f2fe;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: .76rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .guest-toggle-btn:hover {
+            border-color: rgba(125, 211, 252, .42);
+            background: rgba(56, 189, 248, .2);
+            color: #f8fdff;
+        }
+    </style>
     <h1 class="text-30">{{ __('Customers') }}</h1>
     <p class="text-14 mt-10" style="opacity:.8;">{{ __('Created or updated automatically when guests book.') }}</p>
 
@@ -36,7 +58,7 @@
                     <td class="admin-actions">
                         <form method="POST" action="{{ route('admin.customers.toggle', $c) }}" style="display:inline;">
                             @csrf
-                            <button type="submit" style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:.2rem .5rem;cursor:pointer;">
+                            <button type="submit" class="guest-toggle-btn">
                                 {{ $c->is_active ? __('Deactivate') : __('Activate') }}
                             </button>
                         </form>

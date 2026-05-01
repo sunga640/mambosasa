@@ -21,6 +21,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ReceptionBookingController extends Controller
@@ -65,14 +66,29 @@ class ReceptionBookingController extends Controller
         Artisan::call('bookings:expire-pending');
 
         $roomsQuery = Room::query()
-            ->with(['branch']);
+            ->with([
+                'branch',
+                'activeMaintenances',
+                'bookings' => function ($query): void {
+                    $query->whereIn('status', [BookingStatus::Confirmed, BookingStatus::PendingPayment])
+                        ->where(function ($rangeQuery): void {
+                            $rangeQuery->whereNull('check_out')
+                                ->orWhereDate('check_out', '>', now()->toDateString());
+                        });
+                },
+            ]);
 
         $this->scope()->filterRoomsByBranch($roomsQuery);
 
         $methods = BookingMethod::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $rooms = $roomsQuery->orderBy('name')->get()->map(function (Room $room) {
+            $room->setAttribute('is_currently_available', ! $room->isEffectivelyInUse() && $room->status === RoomStatus::Available);
+
+            return $room;
+        });
 
         return view('reception.bookings.create', [
-            'rooms' => $roomsQuery->orderBy('name')->get(),
+            'rooms' => $rooms,
             'methods' => $methods,
         ]);
     }
@@ -227,5 +243,25 @@ class ReceptionBookingController extends Controller
         Invoice::createForBooking($booking->fresh());
         $lifecycle->handlePaymentConfirmed($booking->fresh());
         return back()->with('status', __('Cash payment confirmed.'));
+    }
+
+    public function destroy(Request $request, Booking $booking): RedirectResponse
+    {
+        abort_unless($request->user()?->isSuperAdmin() || $request->user()?->isManager(), 403);
+
+        $this->ensureBookingInScope($booking);
+
+        if ($booking->status === BookingStatus::Confirmed) {
+            return back()->withErrors(['booking' => __('Confirmed bookings cannot be deleted. Change status first or keep the record for accounting.')]);
+        }
+
+        DB::transaction(function () use ($booking): void {
+            $booking->invoice?->delete();
+            $booking->delete();
+        });
+
+        return redirect()
+            ->route('reception.bookings.index')
+            ->with('status', __('Booking deleted.'));
     }
 }

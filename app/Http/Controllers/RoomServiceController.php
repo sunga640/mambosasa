@@ -9,12 +9,32 @@ use App\Models\Booking;
 use App\Models\RestaurantMenuItem;
 use App\Models\RoomServiceOrder;
 use App\Models\RoomServiceOrderItem;
+use App\Services\KitchenNotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
 class RoomServiceController extends Controller
 {
+    public function __construct(
+        private readonly KitchenNotificationService $notifications,
+    ) {}
+
+    private function orderPayload(array $attributes): array
+    {
+        if (! RoomServiceOrder::supportsPaymentTracking()) {
+            unset(
+                $attributes['public_reference'],
+                $attributes['booking_method_id'],
+                $attributes['payment_status'],
+                $attributes['payment_reference'],
+                $attributes['paid_at'],
+            );
+        }
+
+        return $attributes;
+    }
+
     public function index(): View
     {
         $user = auth()->user();
@@ -83,19 +103,25 @@ class RoomServiceController extends Controller
 
         $branchId = (int) $booking->room->hotel_branch_id;
 
-        DB::transaction(function () use ($user, $booking, $roomId, $branchId, $rows, $menuRows, $total, $maxPrep, $request): void {
+        $createdOrder = null;
+
+        DB::transaction(function () use ($user, $booking, $roomId, $branchId, $rows, $menuRows, $total, $maxPrep, $request, &$createdOrder): void {
             $eta = now()->addMinutes($maxPrep);
-            $order = RoomServiceOrder::query()->create([
+            $order = RoomServiceOrder::query()->create($this->orderPayload([
                 'user_id' => $user->id,
                 'booking_id' => $booking->id,
                 'room_id' => $roomId,
                 'hotel_branch_id' => $branchId,
+                'request_source' => 'member',
+                'guest_name' => trim($booking->first_name.' '.$booking->last_name),
+                'guest_phone' => $booking->phone,
                 'status' => RoomServiceOrderStatus::Pending->value,
+                'payment_status' => 'unpaid',
                 'estimated_ready_at' => $eta,
                 'preparation_minutes' => $maxPrep,
                 'total_amount' => $total,
                 'notes' => $request->validated('notes'),
-            ]);
+            ]));
 
             foreach ($rows as $row) {
                 $item = $menuRows->get($row['menu_item_id']);
@@ -110,7 +136,13 @@ class RoomServiceController extends Controller
                     'line_total' => $unit * $qty,
                 ]);
             }
+
+            $createdOrder = $order;
         });
+
+        if ($createdOrder) {
+            $this->notifications->notifyNewOrder($createdOrder->fresh(['room']));
+        }
 
         return redirect()
             ->route('member.room-service.index')

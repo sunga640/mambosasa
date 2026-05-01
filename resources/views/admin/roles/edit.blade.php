@@ -19,22 +19,17 @@
         </div>
         <div class="form-row">
             <label>{{ __('Permissions') }}</label>
-            <p class="text-13 mb-10" style="opacity:.75;">{{ __('Grouped by permission slug prefix (matrix).') }}</p>
+            <p class="text-13 mb-10" style="opacity:.75;">{{ __('Permissions are arranged by module so every role is easier to review and maintain.') }}</p>
             @php
                 $selected = old('permission_ids', $role->permissions->pluck('id')->all());
-                $grouped = $permissions->groupBy(function ($p) {
-                    $s = (string) $p->slug;
-                    $seg = preg_split('/[.\-]/', $s);
-
-                    return $seg[0] !== '' ? $seg[0] : 'general';
-                })->sortKeys();
             @endphp
             <div style="display:flex;flex-direction:column;gap:1rem;">
-                @foreach ($grouped as $group => $perms)
+                @foreach ($permissionGroups as $group)
                     <div style="border:1px solid #e5e5e5;border-radius:10px;padding:1rem;background:#fafafa;">
-                        <div class="text-12" style="text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:#64748b;margin-bottom:.65rem;">{{ ucfirst($group) }}</div>
+                        <div class="text-12" style="text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:#64748b;margin-bottom:.35rem;">{{ $group['label'] }}</div>
+                        <p class="text-12 mb-10" style="opacity:.7;">{{ $group['description'] }}</p>
                         <div class="perm-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.5rem;">
-                            @foreach ($perms as $permission)
+                            @foreach ($group['permissions'] as $permission)
                                 <label style="display:flex;align-items:flex-start;gap:.45rem;font-weight:400;">
                                     <input type="checkbox" name="permission_ids[]" value="{{ $permission->id }}" @checked(in_array($permission->id, $selected, true))>
                                     <span><span class="fw-600">{{ $permission->name }}</span><span class="text-12" style="display:block;opacity:.65;">{{ $permission->slug }}</span></span>

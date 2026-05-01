@@ -12,11 +12,12 @@
 
     <link rel="stylesheet" href="{{ asset('css/vendors.css') }}">
     <link rel="stylesheet" href="{{ asset('css/main.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
     <style>
         :root {
             --site-brand-blue: #1e4d6b;
+            --site-brand-gold: #b8955d;
+            --site-brand-forest: #17352f;
+            --site-soft-cream: #f7f2e8;
             --site-pricing-muted: #5c6b6d;
             --site-dropdown-bg: #f8f7f4;
             /* Dark overlay on top hero (readability) — matches newsletter feel */
@@ -26,6 +27,54 @@
                 rgba(18, 34, 35, 0.36) 48%,
                 rgba(18, 34, 35, 0.64) 100%
             );
+        }
+        html {
+            font-size: 16px;
+        }
+        body {
+            font-family: 'Jost', system-ui, sans-serif;
+            font-size: 1rem;
+            line-height: 1.65;
+            color: #22343a;
+            background: #fff;
+        }
+        .site-main-with-fixed-header .pageHero__text,
+        .site-main-with-fixed-header .site-home-intro__text,
+        .site-main-with-fixed-header .site-home-split__intro p,
+        .site-main-with-fixed-header .site-branch-card p,
+        .site-main-with-fixed-header .site-hotel-views__head p,
+        .site-main-with-fixed-header .site-services-zigzag__head p,
+        .site-main-with-fixed-header .site-service-zigzag-card p,
+        .site-main-with-fixed-header .site-prefooter-modern__copy > p,
+        .site-main-with-fixed-header .site-prefooter-modern__feature-grid p,
+        .site-main-with-fixed-header .contact-location-copy p,
+        .site-main-with-fixed-header .about-service-card p,
+        .site-main-with-fixed-header .footer .text-14.text-light-1,
+        .site-main-with-fixed-header .accordion__content p,
+        .site-main-with-fixed-header .text-16.lh-17 {
+            font-size: clamp(1rem, 0.96rem + 0.16vw, 1.08rem);
+            line-height: 1.8;
+        }
+        h1, h2, h3, h4, h5, h6,
+        .site-heading-font {
+            font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+        }
+        .site-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: var(--site-brand-gold);
+        }
+        .site-kicker::before,
+        .site-kicker::after {
+            content: "";
+            width: 2.5rem;
+            height: 1px;
+            background: rgba(184, 149, 93, 0.55);
         }
         /* Section 1 / inner page heroes: gradient sits above image + wipe animation (separate from ::after) */
         .pageHero .pageHero__bg {
@@ -45,25 +94,38 @@
             z-index: 1;
         }
         .flatpickr-calendar {
-            border-radius: 14px;
-            border: 1px solid rgba(226, 232, 240, 0.95);
-            box-shadow: 0 14px 36px rgba(18, 34, 35, 0.12);
+            border-radius: 0;
+            border: 1px solid #d6dde7;
+            box-shadow: 0 18px 42px rgba(18, 34, 35, 0.14);
             font-family: inherit;
             overflow: hidden;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         }
         .flatpickr-months {
-            background: linear-gradient(120deg, rgba(30, 77, 107, 0.12) 0%, rgba(0, 153, 204, 0.1) 50%, rgba(18, 34, 35, 0.08) 100%) !important;
-            border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+            background: linear-gradient(120deg, rgba(30, 77, 107, 0.12) 0%, rgba(0, 153, 204, 0.08) 100%) !important;
+            border-bottom: 1px solid #dbe3ec;
         }
         .flatpickr-months .flatpickr-month { height: 46px; }
-        .flatpickr-current-month { font-size: 1rem; padding-top: 8px; }
+        .flatpickr-current-month { font-size: 1rem; padding-top: 8px; color: #0f172a; }
         .flatpickr-prev-month svg, .flatpickr-next-month svg { width: 14px !important; height: 14px !important; }
-        .flatpickr-day { border-radius: 8px; }
-        .flatpickr-day.today { border-color: #0f172a; }
+        .flatpickr-weekdays {
+            background: #fff;
+        }
+        .flatpickr-weekday {
+            color: #0f172a !important;
+            font-weight: 600;
+        }
+        .flatpickr-day {
+            border-radius: 0;
+            border-color: #eceff3;
+            max-width: none;
+        }
+        .flatpickr-day.today {
+            border-color: #0f172a;
+        }
         .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
-            background: linear-gradient(135deg, #1e4d6b 0%, #1d4ed8 100%) !important;
-            border-color: transparent !important;
+            background: #f5a623 !important;
+            border-color: #f5a623 !important;
             color: #fff !important;
         }
         html[data-site-theme="light"] .site-main-with-fixed-header,
@@ -730,17 +792,7 @@
          * Offset main so hero clears the fixed header.
          */
         main.site-main-with-fixed-header {
-            padding-top: 74px;
-        }
-        @media (min-width: 576px) {
-            main.site-main-with-fixed-header {
-                padding-top: 90px;
-            }
-        }
-        @media (min-width: 768px) {
-            main.site-main-with-fixed-header {
-                padding-top: calc(40px + 90px);
-            }
+            padding-top: 0;
         }
         .site-pricing-card {
             border-radius: 20px;
@@ -1136,20 +1188,20 @@
         /* Inner pages: shorter first-section heroes */
         body .pageHero.-type-1 {
             height: 380px !important;
-            padding-top: 130px !important;
+            padding-top: 118px !important;
         }
         body .pageHero.-type-2 {
             height: 380px !important;
-            padding-top: 130px !important;
+            padding-top: 118px !important;
         }
         @media (max-width: 767px) {
             body .pageHero.-type-1 {
-                padding-top: 110px !important;
+                padding-top: 92px !important;
                 padding-bottom: 36px !important;
             }
             body .pageHero.-type-2 {
                 height: 300px !important;
-                padding-top: 110px !important;
+                padding-top: 92px !important;
                 padding-bottom: 36px !important;
             }
         }
@@ -1161,10 +1213,17 @@
         body .layout-pt-sm { padding-top: 16px !important; }
         body .layout-pb-sm { padding-bottom: 16px !important; }
         /* Reduce big gap after hero on all pages */
+        body .site-main-with-fixed-header > section:first-of-type,
+        body .site-main-with-fixed-header > .site-home-hero:first-of-type {
+            margin-top: 0 !important;
+        }
         body .pageHero + section.layout-pt-lg,
         body .pageHero + section.layout-pt-md,
-        body .pageHero + section[class*="layout-pt-"] {
-            padding-top: 24px !important;
+        body .pageHero + section[class*="layout-pt-"],
+        body .site-main-with-fixed-header > section:first-of-type.layout-pt-lg,
+        body .site-main-with-fixed-header > section:first-of-type.layout-pt-md,
+        body .site-main-with-fixed-header > section:first-of-type[class*="layout-pt-"] {
+            padding-top: 0 !important;
         }
         @media (max-width: 767px) {
             body .layout-pt-lg { padding-top: 22px !important; }
@@ -1175,8 +1234,11 @@
             body .layout-pb-sm { padding-bottom: 12px !important; }
             body .pageHero + section.layout-pt-lg,
             body .pageHero + section.layout-pt-md,
-            body .pageHero + section[class*="layout-pt-"] {
-                padding-top: 16px !important;
+            body .pageHero + section[class*="layout-pt-"],
+            body .site-main-with-fixed-header > section:first-of-type.layout-pt-lg,
+            body .site-main-with-fixed-header > section:first-of-type.layout-pt-md,
+            body .site-main-with-fixed-header > section:first-of-type[class*="layout-pt-"] {
+                padding-top: 0 !important;
             }
         }
         .site-booking-portal-fab {
@@ -1250,10 +1312,289 @@
         transition: all 0.3s ease;
     }
 
-    .menuFullScreen.is-active {
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
+        .menuFullScreen.is-active {
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .site-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 2.9rem;
+            padding: 0.85rem 1.25rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #17352f 0%, #214b43 62%, #c6a26b 100%);
+            color: #fff !important;
+            text-decoration: none;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            box-shadow: 0 14px 30px rgba(23, 53, 47, 0.14);
+        }
+        .site-floating-card {
+            border-radius: 1.5rem;
+            border: 1px solid rgba(23, 53, 47, 0.08);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 18px 38px rgba(23, 53, 47, 0.08);
+        }
+        .site-services-zigzag,
+        .site-hotel-views {
+            padding: 4.6rem 0;
+        }
+        .site-services-zigzag {
+            background: linear-gradient(180deg, #fff 0%, #f7f1e8 100%);
+        }
+        .site-hotel-views {
+            background: #fff;
+        }
+        .site-services-zigzag__head,
+        .site-hotel-views__head {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr);
+            gap: 1.4rem;
+            align-items: end;
+            margin-bottom: 1.8rem;
+        }
+        .site-services-zigzag__head h2,
+        .site-hotel-views__head h2 {
+            margin: 0.85rem 0 0;
+            font-size: clamp(2.2rem, 4vw, 3.5rem);
+            line-height: 0.94;
+            color: #17352f;
+        }
+        .site-services-zigzag__head p,
+        .site-hotel-views__head p {
+            margin: 0;
+            color: #5c6b6d;
+            font-size: 0.95rem;
+            line-height: 1.85;
+            max-width: 34rem;
+        }
+        .site-services-zigzag__grid {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 0.8rem;
+        }
+        .site-service-zigzag-card {
+            position: relative;
+            min-height: 15rem;
+            border-radius: 0;
+            overflow: hidden;
+            isolation: isolate;
+            background: #d8d2c8;
+            box-shadow: 0 18px 40px rgba(23, 53, 47, 0.08);
+        }
+        .site-service-zigzag-card--large {
+            grid-column: span 7;
+            min-height: 19rem;
+        }
+        .site-service-zigzag-card--small {
+            grid-column: span 5;
+        }
+        .site-service-zigzag-card__media {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.45s ease;
+        }
+        .site-service-zigzag-card__overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: linear-gradient(180deg, rgba(17, 35, 38, 0.06) 0%, rgba(17, 35, 38, 0.28) 42%, rgba(17, 35, 38, 0.88) 100%);
+            color: #fff;
+            transition: background 0.35s ease;
+        }
+        .site-service-zigzag-card:hover .site-service-zigzag-card__media {
+            transform: scale(1.08);
+        }
+        .site-service-zigzag-card:hover .site-service-zigzag-card__overlay {
+            background: linear-gradient(180deg, rgba(17, 35, 38, 0.18) 0%, rgba(30, 77, 107, 0.3) 38%, rgba(17, 35, 38, 0.92) 100%);
+        }
+        .site-service-zigzag-card__eyebrow {
+            display: inline-flex;
+            width: fit-content;
+            padding: 0.44rem 0.7rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            font-size: 0.64rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+        .site-service-zigzag-card h3 {
+            margin: 0;
+            font-size: clamp(1.15rem, 2vw, 1.8rem);
+            line-height: 0.98;
+            color: #fff;
+        }
+        .site-service-zigzag-card p {
+            margin: 0;
+            max-width: 30rem;
+            color: rgba(255, 255, 255, 0.84);
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+        .site-service-zigzag-card__meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .site-service-zigzag-card__meta strong,
+        .site-service-zigzag-card__meta a {
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        .site-hotel-views__mosaic {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: repeat(2, 248px);
+            gap: 0.9rem;
+            align-items: stretch;
+        }
+        .site-booking-services .container,
+        .site-home-services .container {
+            max-width: 74rem;
+        }
+        .site-hotel-views__tile {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0;
+            background: #ece8df;
+            min-height: 0;
+            height: 100%;
+            margin: 0;
+        }
+        .site-hotel-views__tile::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(10, 21, 25, 0.02) 0%, rgba(10, 21, 25, 0.1) 45%, rgba(10, 21, 25, 0.48) 100%);
+            opacity: 0.72;
+            transition: opacity 0.3s ease, background 0.3s ease;
+        }
+        .site-hotel-views__tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+        .site-hotel-views__tile:hover img {
+            transform: scale(1.06);
+        }
+        .site-hotel-views__tile:hover::after {
+            opacity: 1;
+            background: linear-gradient(180deg, rgba(10, 21, 25, 0.02) 0%, rgba(10, 21, 25, 0.18) 42%, rgba(10, 21, 25, 0.82) 100%);
+        }
+        .site-hotel-views__caption {
+            position: absolute;
+            inset: auto 1rem 1rem 1rem;
+            z-index: 2;
+            display: grid;
+            gap: 0.35rem;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity 0.28s ease, transform 0.28s ease;
+            pointer-events: none;
+        }
+        .site-hotel-views__caption span {
+            font-size: 0.68rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: rgba(255,255,255,0.82);
+        }
+        .site-hotel-views__caption strong {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(1.6rem, 2.4vw, 2.4rem);
+            line-height: 0.92;
+            color: #fff;
+        }
+        .site-hotel-views__tile:hover .site-hotel-views__caption,
+        .site-hotel-views__tile:focus-within .site-hotel-views__caption {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .site-hotel-views__tile--1 {
+            grid-row: 1 / span 2;
+            min-height: 505px;
+        }
+        .site-hotel-views__tile--2,
+        .site-hotel-views__tile--3,
+        .site-hotel-views__tile--4,
+        .site-hotel-views__tile--5 {
+            min-height: 248px;
+        }
+        @media (max-width: 991px) {
+            .site-services-zigzag__head,
+            .site-hotel-views__head,
+            .site-hotel-views__mosaic {
+                grid-template-columns: 1fr;
+            }
+            .site-hotel-views__mosaic {
+                grid-template-rows: none;
+                grid-auto-rows: 260px;
+            }
+            .site-service-zigzag-card--large,
+            .site-service-zigzag-card--small {
+                grid-column: span 12;
+                min-height: 22rem;
+            }
+            .site-hotel-views__tile--1 {
+                grid-row: auto;
+                min-height: 320px;
+            }
+            .site-hotel-views__tile--2,
+            .site-hotel-views__tile--3,
+            .site-hotel-views__tile--4,
+            .site-hotel-views__tile--5 {
+                min-height: 260px;
+            }
+        }
+        @media (max-width: 767px) {
+            .site-services-zigzag,
+            .site-hotel-views {
+                padding: 3.6rem 0;
+            }
+            .site-hotel-views__mosaic {
+                grid-auto-rows: 220px;
+            }
+            .site-hotel-views__tile--1 {
+                min-height: 260px;
+            }
+            .site-hotel-views__tile--2,
+            .site-hotel-views__tile--3,
+            .site-hotel-views__tile--4,
+            .site-hotel-views__tile--5 {
+                min-height: 220px;
+            }
+            .site-service-zigzag-card,
+            .site-service-zigzag-card--large,
+            .site-service-zigzag-card--small {
+                min-height: 19rem;
+            }
+            .site-service-zigzag-card__meta {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
 
     /* Inazuia kuscroll ukiwa ndani ya menu */
     .html-overflow-hidden, .html-overflow-hidden body {
@@ -1271,9 +1612,7 @@
     @stack('head')
 </head>
 <body>
-    @include('partials.page-progress')
     @include('site.partials.menu-fullscreen')
-    @include('site.partials.cursor')
     <main class="site-main-with-fixed-header">
         @include('site.partials.top-header')
         @yield('content')
@@ -1282,10 +1621,8 @@
     </main>
     @include('site.partials.booking-portal-fab')
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="{{ asset('js/vendors.js') }}"></script>
-    <script src="{{ asset('js/main.js') }}"></script>
+    <script defer src="{{ asset('js/vendors.js') }}"></script>
+    <script defer src="{{ asset('js/main.js') }}"></script>
 
     <script>
         (function () {
@@ -1305,6 +1642,7 @@
             menu.querySelectorAll('a[href]').forEach(a => a.addEventListener('click', () => { if(a.getAttribute('href')!=='#') { menu.classList.remove('is-active'); html.classList.remove('html-overflow-hidden'); } }));
         })();
     </script>
+    @include('partials.client-security-deter')
     @stack('scripts')
 </body>
 </html>

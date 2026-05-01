@@ -26,7 +26,7 @@ class RoomTypeController extends Controller
     {
         return view('admin.room-types.create', [
             'branches' => HotelBranch::query()->orderBy('name')->get(),
-            'mediaAssets' => MediaAsset::query()->latest()->limit(100)->get(),
+            'mediaAssets' => MediaAsset::query()->latest()->get(),
         ]);
     }
 
@@ -63,7 +63,7 @@ class RoomTypeController extends Controller
         return view('admin.room-types.edit', [
             'roomType' => $roomType,
             'branches' => HotelBranch::query()->orderBy('name')->get(),
-            'mediaAssets' => MediaAsset::query()->latest()->limit(100)->get(),
+            'mediaAssets' => MediaAsset::query()->latest()->get(),
         ]);
     }
 

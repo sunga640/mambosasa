@@ -14,6 +14,7 @@ class StoreContactMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'branch_id' => ['nullable', 'integer', 'exists:hotel_branches,id'],
             'first_name' => ['required', 'string', 'max:120'],
             'last_name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255'],

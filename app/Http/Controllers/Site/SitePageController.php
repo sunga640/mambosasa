@@ -6,8 +6,8 @@ use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Room;
-use App\Models\RoomRank;
 use App\Models\HotelService;
+use App\Models\HotelBranch;
 use App\Models\RoomType;
 use App\Models\SystemSetting;
 use App\Models\User;
@@ -32,6 +32,12 @@ class SitePageController extends Controller
         return view('site.home', [
             'stats' => $this->buildStats(),
             'homeRoomTypes' => $homeRoomTypes,
+            'homeBranches' => HotelBranch::query()
+                ->where('is_active', true)
+                ->withCount('rooms')
+                ->orderBy('name')
+                ->limit(6)
+                ->get(),
             'homeHotelServices' => HotelService::query()
                 ->listedForGuests()
                 ->orderBy('sort_order')
@@ -77,23 +83,10 @@ class SitePageController extends Controller
         }
 
         if ($slug === 'pricing') {
-            $ranks = RoomRank::query()->where('is_active', true)->orderBy('sort_order')->get();
-            $roomsByRankId = [];
-            foreach ($ranks as $rank) {
-                $roomsByRankId[$rank->id] = Room::query()
-                    ->where('room_rank_id', $rank->id)
-                    ->listedOnPublicSite()
-                    ->with(['branch', 'rank'])
-                    ->orderBy('name')
-                    ->get();
-            }
-            $data['roomRanks'] = $ranks;
-            $data['roomsByRankId'] = $roomsByRankId;
-            $data['unrankedRooms'] = Room::query()
-                ->whereNull('room_rank_id')
-                ->listedOnPublicSite()
-                ->with(['branch', 'rank'])
-                ->orderBy('name')
+            $data['roomTypes'] = RoomType::query()
+                ->where('is_active', true)
+                ->with(['branch', 'rooms' => fn ($q) => $q->listedOnPublicSite()->with('images')->orderBy('room_number')])
+                ->orderByDesc('updated_at')
                 ->get();
         }
 

@@ -3,12 +3,55 @@
 @section('title', __('Room types'))
 
 @section('content')
+    <style>
+        .room-usage-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 31px;
+            padding: .22rem .62rem;
+            border: 1px solid rgba(125, 211, 252, .24);
+            background: rgba(56, 189, 248, .12);
+            color: #e0f2fe;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: .74rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .room-usage-toggle-btn:hover {
+            border-color: rgba(125, 211, 252, .42);
+            background: rgba(56, 189, 248, .2);
+            color: #f8fdff;
+        }
+    </style>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
         <h1 class="text-30">{{ __('Room types') }}</h1>
         <a href="{{ route('reception.rooms.create', ['branch_id' => $filterBranchId]) }}" class="button -md -accent-1 bg-accent-1 text-white" style="text-decoration:none;display:inline-block;padding:.5rem 1rem;border-radius:8px;">{{ __('Create room') }}</a>
     </div>
 
+    <div class="mt-20" style="display:flex;gap:.65rem;flex-wrap:wrap;">
+        @php
+            $roomStates = [
+                'all' => __('All rooms'),
+                'available' => __('Only available'),
+                'occupied' => __('Occupied'),
+                'booked' => __('Booked'),
+                'under_maintenance' => __('Under maintenance'),
+            ];
+        @endphp
+        @foreach ($roomStates as $stateKey => $stateLabel)
+            <a
+                href="{{ route('reception.rooms.index', array_merge(request()->except('page'), ['status' => $stateKey])) }}"
+                class="dash-btn {{ $statusFilter === $stateKey ? 'dash-btn--primary' : 'dash-btn--ghost' }}"
+            >
+                {{ $stateLabel }}
+            </a>
+        @endforeach
+    </div>
+
     <form method="GET" action="{{ route('reception.rooms.index') }}" class="form-row mt-20" style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;">
+        <input type="hidden" name="status" value="{{ $statusFilter }}">
         <div>
             <label for="branch_id">{{ __('Filter by branch') }}</label>
             <select name="branch_id" id="branch_id" onchange="this.form.submit()">
@@ -33,6 +76,10 @@
             <input type="hidden" name="check_in" id="check_in" value="{{ $filterCheckIn }}">
             <input type="hidden" name="check_out" id="check_out" value="{{ $filterCheckOut }}">
         </div>
+        <div>
+            <label for="reception-room-search">{{ __('Search rooms') }}</label>
+            <input id="reception-room-search" type="search" name="q" value="{{ $search }}" placeholder="{{ __('Room, number, branch, type') }}">
+        </div>
         <div style="display:flex;align-items:center;gap:.5rem;min-height:42px;">
             <label for="available_only" style="margin:0;display:flex;align-items:center;gap:.45rem;">
                 <input type="checkbox" name="available_only" id="available_only" value="1" @checked($availableOnly)>
@@ -40,6 +87,7 @@
             </label>
         </div>
         <button type="submit" class="dash-btn dash-btn--primary">{{ __('Filter') }}</button>
+        <a href="{{ route('reception.rooms.index') }}" class="dash-btn dash-btn--ghost">{{ __('Reset') }}</a>
     </form>
 
     <table class="admin-table">
@@ -98,7 +146,7 @@
                         @endif
                         <form action="{{ route('reception.rooms.toggle-in-use', $room) }}" method="POST" style="display:inline;margin-left:.5rem;">
                             @csrf
-                            <button type="submit" class="text-13" style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:.2rem .45rem;cursor:pointer;" title="{{ __('Toggle manual in-use flag') }}">
+                            <button type="submit" class="room-usage-toggle-btn" title="{{ __('Toggle manual in-use flag') }}">
                                 {{ $room->force_in_use ? __('Unforce') : __('Force') }}
                             </button>
                         </form>

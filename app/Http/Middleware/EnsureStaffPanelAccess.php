@@ -16,9 +16,7 @@ class EnsureStaffPanelAccess
         abort(403);
     }
 
-    $slug = $user->role?->slug;
-    // Ongeza Role::MANAGER_SLUG hapa
-    if (in_array($slug, [Role::RECEPTION_SLUG, Role::DIRECTOR_SLUG, Role::SUPER_ADMIN_SLUG, Role::MANAGER_SLUG], true)) {
+    if ($user->hasStaffPanelAccess() || $user->isManager()) {
         return $next($request);
     }
 
